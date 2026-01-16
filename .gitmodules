@@ -1,0 +1,6 @@
+[submodule "famitone"]
+	path = lib/famitone
+	url = https://github.com/nesdoug/famitone5.0.git
+[submodule "neslib"]
+	path = lib/neslib
+	url = https://github.com/clbr/neslib.git
