@@ -69,6 +69,9 @@ fceux: $(NAME).nes
 nesst:
 	$(WINE) $(NESST)/NESst.exe
 
+nesifier:
+	$(WINE) $(TOOLS)/NESIFIER.exe
+
 clean:
 	rm -rf build
 

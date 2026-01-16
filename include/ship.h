@@ -5,7 +5,6 @@
 #include "palette.h"
 #include "types.h"
 
-extern const val ship_palette[];
 extern const val ship_0_data[];
 extern const val ship_1_data[];
 extern const val ship_2_data[];
@@ -25,6 +24,8 @@ extern const val* const ship_list[];
 #define SHIP_DR ship_list[5]
 #define SHIP_RIGHT ship_list[6]
 #define SHIP_UR ship_list[7]
+
+#define SHIP_PALETTE BLACK, BLUE_1, ORANGE_2, LIGHT_BLUE
 
 // kg
 #define SHIP_MASS 64

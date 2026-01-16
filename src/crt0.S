@@ -285,4 +285,4 @@ sounds_data:
 
 .segment "CHARS"
 
-	.incbin "../assets/sprites.chr"
+	.incbin "../assets/bg.chr"

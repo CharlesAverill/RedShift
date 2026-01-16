@@ -32,5 +32,5 @@ render_routine(CBodies) {
         }
         i = 0;
     }
-    return oam_spr(0, 0, sprite, 1, sprid);
+    return oam_spr(120, 120, sprite, 1, sprid);
 }

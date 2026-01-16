@@ -8,12 +8,18 @@
 #include "celestial_bodies.h"
 #include "math.h"
 #include "controls.h"
-
-#pragma bss-name(push, "ZEROPAGE")
+#include "bg.h"
 
 const val bg_palette[] = {
-    GRAYSCALE,
+    0x0f, 0x05, 0x03, 0x3C,
     0,0,0,0,
+    0,0,0,0,
+    0,0,0,0
+};
+
+const val sprite_palettes[] = {
+    SHIP_PALETTE,
+    GRAYSCALE,
     0,0,0,0,
     0,0,0,0
 };
@@ -25,12 +31,15 @@ void main(void) {
     // Turn off the screen
     ppu_off();
 
-    // Load palettes
+    // Draw background
+    bank_bg(1);
     pal_bg(bg_palette);
-    pal_spr(ship_palette);
+    vram_adr(NAMETABLE_A);
+    vram_unrle(bg);
 
-    // Select the third set of tiles (ship)
-    bank_spr(1);
+    // Prepare to draw sprites
+    bank_spr(0);
+    pal_spr(sprite_palettes);
 
     ppu_on_all();
 

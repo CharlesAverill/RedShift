@@ -89,89 +89,80 @@ render_routine(Ship) {
     return oam_meta_spr(ship_x >> 8, ship_y >> 8, sprid, ship_list[((ship_rotation + 16) / 32) % 8]);
 }
 
-const val ship_palette[] = {
-    BLACK, BLUE_1, ORANGE_2, LIGHT_BLUE,
-    GRAYSCALE,
-    0,0,0,0,
-    0,0,0,0
-};
-
 const val ship_0_data[]={
 
-	  0,  0,0x00,0,
-	  8,  0,0x01,0,
-	  8,  8,0x11,0,
-	  0,  8,0x10,0,
+	  0,  0,0x80,0,
+	  8,  0,0x81,0,
+	  8,  8,0x91,0,
+	  0,  8,0x90,0,
 	128
 
 };
 
 const val ship_1_data[]={
 
-	  0,  0,0x20,0,
-	  8,  0,0x21,0,
-	  8,  8,0x31,0,
-	  0,  8,0x30,0,
+	  0,  0,0xa0,0,
+	  8,  0,0xa1,0,
+	  8,  8,0xb1,0,
+	  0,  8,0xb0,0,
 	128
 
 };
 
 const val ship_2_data[]={
 
-	  0,  0,0x02,0,
-	  8,  0,0x03,0,
-	  0,  8,0x12,0,
-	  8,  8,0x13,0,
+	  0,  0,0x82,0,
+	  8,  0,0x83,0,
+	  0,  8,0x92,0,
+	  8,  8,0x93,0,
 	128
 
 };
 
-const val ship_3_data[]={
-
-	  0,  8,0x20,0|OAM_FLIP_V,
-	  8,  8,0x21,0|OAM_FLIP_V,
-	  8,  0,0x31,0|OAM_FLIP_V,
-	  0,  0,0x30,0|OAM_FLIP_V,
+const unsigned char ship_3_data[]={
+	  0,  8,0xa0,0|OAM_FLIP_V,
+	  8,  8,0xa1,0|OAM_FLIP_V,
+	  8,  0,0xb1,0|OAM_FLIP_V,
+	  0,  0,0xb0,0|OAM_FLIP_V,
 	128
-
 };
 
 const val ship_4_data[]={
 
-	  8,  8,0x00,0|OAM_FLIP_H|OAM_FLIP_V,
-	  0,  0,0x11,0|OAM_FLIP_H|OAM_FLIP_V,
-	  0,  8,0x01,0|OAM_FLIP_H|OAM_FLIP_V,
-	  8,  0,0x10,0|OAM_FLIP_H|OAM_FLIP_V,
+	  8,  8,0x80,0|OAM_FLIP_H|OAM_FLIP_V,
+	  0,  0,0x91,0|OAM_FLIP_H|OAM_FLIP_V,
+	  0,  8,0x81,0|OAM_FLIP_H|OAM_FLIP_V,
+	  8,  0,0x90,0|OAM_FLIP_H|OAM_FLIP_V,
 	128
 
 };
 
 const val ship_5_data[]={
 
-	  8,  8,0x20,0|OAM_FLIP_H|OAM_FLIP_V,
-	  0,  8,0x21,0|OAM_FLIP_H|OAM_FLIP_V,
-	  0,  0,0x31,0|OAM_FLIP_H|OAM_FLIP_V,
-	  8,  0,0x30,0|OAM_FLIP_H|OAM_FLIP_V,
+	  8,  8,0xa0,0|OAM_FLIP_H|OAM_FLIP_V,
+	  0,  8,0xa1,0|OAM_FLIP_H|OAM_FLIP_V,
+	  0,  0,0xb1,0|OAM_FLIP_H|OAM_FLIP_V,
+	  8,  0,0xb0,0|OAM_FLIP_H|OAM_FLIP_V,
 	128
 
 };
 
 const val ship_6_data[]={
 
-	  8,  8,0x02,0|OAM_FLIP_H|OAM_FLIP_V,
-	  0,  8,0x03,0|OAM_FLIP_H|OAM_FLIP_V,
-	  8,  0,0x12,0|OAM_FLIP_H|OAM_FLIP_V,
-	  0,  0,0x13,0|OAM_FLIP_H|OAM_FLIP_V,
+	  8,  8,0x82,0|OAM_FLIP_H|OAM_FLIP_V,
+	  0,  8,0x83,0|OAM_FLIP_H|OAM_FLIP_V,
+	  8,  0,0x92,0|OAM_FLIP_H|OAM_FLIP_V,
+	  0,  0,0x93,0|OAM_FLIP_H|OAM_FLIP_V,
 	128
 
 };
 
 const val ship_7_data[]={
 
-	  8,  0,0x20,0|OAM_FLIP_H,
-	  0,  0,0x21,0|OAM_FLIP_H,
-	  0,  8,0x31,0|OAM_FLIP_H,
-	  8,  8,0x30,0|OAM_FLIP_H,
+	  8,  0,0xa0,0|OAM_FLIP_H,
+	  0,  0,0xa1,0|OAM_FLIP_H,
+	  0,  8,0xb1,0|OAM_FLIP_H,
+	  8,  8,0xb0,0|OAM_FLIP_H,
 	128
 
 };
