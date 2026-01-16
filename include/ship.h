@@ -5,105 +5,16 @@
 #include "palette.h"
 #include "types.h"
 
-const val ship_palette[] = {
-    BLACK, BLUE_1, ORANGE_2, LIGHT_BLUE,
-    0,0,0,0,
-    0,0,0,0,
-    0,0,0,0
-};
-
-const unsigned char ship_0_data[]={
-
-	  0,  0,0x00,0,
-	  8,  0,0x01,0,
-	  8,  8,0x11,0,
-	  0,  8,0x10,0,
-	128
-
-};
-
-const unsigned char ship_1_data[]={
-
-	  0,  0,0x20,0,
-	  8,  0,0x21,0,
-	  8,  8,0x31,0,
-	  0,  8,0x30,0,
-	128
-
-};
-
-const unsigned char ship_2_data[]={
-
-	  0,  0,0x02,0,
-	  8,  0,0x03,0,
-	  0,  8,0x12,0,
-	  8,  8,0x13,0,
-	128
-
-};
-
-const unsigned char ship_3_data[]={
-
-	  0,  8,0x20,0|OAM_FLIP_V,
-	  8,  8,0x21,0|OAM_FLIP_V,
-	  8,  0,0x31,0|OAM_FLIP_V,
-	  0,  0,0x30,0|OAM_FLIP_V,
-	128
-
-};
-
-const unsigned char ship_4_data[]={
-
-	  8,  8,0x00,0|OAM_FLIP_H|OAM_FLIP_V,
-	  0,  0,0x11,0|OAM_FLIP_H|OAM_FLIP_V,
-	  0,  8,0x01,0|OAM_FLIP_H|OAM_FLIP_V,
-	  8,  0,0x10,0|OAM_FLIP_H|OAM_FLIP_V,
-	128
-
-};
-
-const unsigned char ship_5_data[]={
-
-	  8,  8,0x20,0|OAM_FLIP_H|OAM_FLIP_V,
-	  0,  8,0x21,0|OAM_FLIP_H|OAM_FLIP_V,
-	  0,  0,0x31,0|OAM_FLIP_H|OAM_FLIP_V,
-	  8,  0,0x30,0|OAM_FLIP_H|OAM_FLIP_V,
-	128
-
-};
-
-const unsigned char ship_6_data[]={
-
-	  8,  8,0x02,0|OAM_FLIP_H|OAM_FLIP_V,
-	  0,  8,0x03,0|OAM_FLIP_H|OAM_FLIP_V,
-	  8,  0,0x12,0|OAM_FLIP_H|OAM_FLIP_V,
-	  0,  0,0x13,0|OAM_FLIP_H|OAM_FLIP_V,
-	128
-
-};
-
-const unsigned char ship_7_data[]={
-
-	  8,  0,0x20,0|OAM_FLIP_H,
-	  0,  0,0x21,0|OAM_FLIP_H,
-	  0,  8,0x31,0|OAM_FLIP_H,
-	  8,  8,0x30,0|OAM_FLIP_H,
-	128
-
-};
-
-const unsigned char* const ship_list[]={
-
-	ship_0_data,
-	ship_1_data,
-	ship_2_data,
-	ship_3_data,
-	ship_4_data,
-	ship_5_data,
-	ship_6_data,
-	ship_7_data
-
-};
+extern const val ship_palette[];
+extern const val ship_0_data[];
+extern const val ship_1_data[];
+extern const val ship_2_data[];
+extern const val ship_3_data[];
+extern const val ship_4_data[];
+extern const val ship_5_data[];
+extern const val ship_6_data[];
+extern const val ship_7_data[];
+extern const val* const ship_list[];
 
 #define SHIP_SPRID 0
 #define SHIP_UP ship_list[0]
@@ -115,6 +26,20 @@ const unsigned char* const ship_list[]={
 #define SHIP_RIGHT ship_list[6]
 #define SHIP_UR ship_list[7]
 
-extern val ship_x, ship_y;
+// kg
+#define SHIP_MASS 64
 
-#endif SHIP
+// px/frame^2
+#define SHIP_THRUST 32
+
+#define SHIP_DRAG 8
+
+extern sbigval ship_x, ship_y;
+extern val ship_rotation;
+extern sbigval ship_vx, ship_vy;
+
+void Ship_init(void);
+void Ship_update(void);
+void Ship_render(void);
+
+#endif

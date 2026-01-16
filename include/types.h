@@ -2,6 +2,9 @@
 #define TYPES_H
 
 typedef unsigned char val;
+typedef signed char sval;
+typedef unsigned short bigval;
+typedef signed short sbigval;
 typedef unsigned short ptr;
 
 typedef val bool;

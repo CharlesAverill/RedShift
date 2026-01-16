@@ -23,3 +23,41 @@ const val sine_table_256[256] = {
 val sin(val x) {
     return sine_table_256[x];
 }
+
+val cos(val x) {
+    return sin(x + 64);
+}
+
+// https://en.wikipedia.org/wiki/Integer_square_root#Algorithm_using_binary_search
+static val L, R;
+static unsigned short M;
+val isqrt(val x) {
+    L = 0;
+    R = x + 1;
+
+    while (L != R - 1) {
+        M = (L + R) / 2;
+        if (M * M <= x)
+            L = M;
+        else
+            R = M;
+    }
+
+    return L;
+}
+
+signed short isqrt16(signed short x) {
+    static signed short L, R, M;
+    L = 0;
+    R = x + 1;
+
+    while (L != R - 1) {
+        M = (L + R) / 2;
+        if (M * M <= x)
+            L = M;
+        else
+            R = M;
+    }
+
+    return L;
+}
