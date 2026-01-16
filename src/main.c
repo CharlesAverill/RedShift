@@ -48,7 +48,7 @@ void main(void) {
         oam_clear();
 
         // Push ship metasprite to (ship_x, ship_y)
-        oam_meta_spr(ship_x, sin(ship_x + 8), SHIP_SPRID, ship_msprite);
+        oam_meta_spr(ship_x, 7 * sin(ship_x + 8) / 8, SHIP_SPRID, ship_list[ship_x / 32]);
 
         ++ship_x;
         ++ship_y;
