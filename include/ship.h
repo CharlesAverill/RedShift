@@ -32,14 +32,16 @@ extern const val* const ship_list[];
 // px/frame^2
 #define SHIP_THRUST 32
 
-#define SHIP_DRAG 8
+// inverse of drag
+// v := v / drag
+#define SHIP_DRAG 32
 
 extern sbigval ship_x, ship_y;
 extern val ship_rotation;
 extern sbigval ship_vx, ship_vy;
 
-void Ship_init(void);
-void Ship_update(void);
-void Ship_render(void);
+routine(Ship_init);
+routine(Ship_update);
+render_routine(Ship);
 
 #endif

@@ -14,6 +14,10 @@ typedef val bool;
 
 #define routine(id) void id(void)
 
+extern val sprid;
+#define render_routine(id) val Render_ ## id (void)
+#define render(id) sprid = Render_ ## id ()
+
 #define NULL 0
 
 #endif

@@ -6,7 +6,7 @@ sbigval ship_x, ship_y;
 sbigval ship_vx, ship_vy;
 val ship_rotation;
 
-void Ship_init(void) {
+routine(Ship_init) {
     ship_x = 128 << 8;
     ship_y = 128 << 8;
 
@@ -18,12 +18,35 @@ void Ship_init(void) {
 
 sbigval f_x, f_y;
 val thrust_counter = 0;
-void Ship_update(void) {
+bool rotating_retrograde = false;
+val target_rotation;
+sbigval diff1, diff2;
+routine(Ship_update) {
     // Rotation
     if (down(LEFT))
-        ++ship_rotation;
+        ship_rotation += 2;
     else if (down(RIGHT))
-        --ship_rotation;
+        ship_rotation -= 2;
+
+    if (triggered(DOWN)) {
+        rotating_retrograde = true;
+        if (ship_vx == 0 && ship_vy == 0)
+            target_rotation = ship_rotation + 128;
+        else
+            target_rotation = atan2(ship_vx, ship_vy);
+    } else if(!down(DOWN)) {
+        rotating_retrograde = false;
+        target_rotation = ship_rotation;
+    } else {
+        diff1 = (sbigval)ship_rotation - target_rotation;
+        diff2 = (sbigval)target_rotation - ship_rotation;
+
+        if (abs(diff1) < abs(diff2)) {
+            ship_rotation += sign(diff1) * 2;
+        } else {
+            ship_rotation += sign(diff2) * 2;
+        }
+    }
     
     // Thrusters
     if (thrust_counter % 3 == 0) {
@@ -51,7 +74,7 @@ void Ship_update(void) {
     ++thrust_counter;
     
     // Speed cap
-    #define MAX_SPEED 1280
+    #define MAX_SPEED 2048
     if (ship_vx > MAX_SPEED) ship_vx = MAX_SPEED;
     if (ship_vx < -MAX_SPEED) ship_vx = -MAX_SPEED;
     if (ship_vy > MAX_SPEED) ship_vy = MAX_SPEED;
@@ -62,13 +85,13 @@ void Ship_update(void) {
     ship_y += ship_vy;
 }
 
-void Ship_render(void) {
-    oam_meta_spr(ship_x >> 8, ship_y >> 8, SHIP_SPRID, ship_list[((ship_rotation + 16) / 32) % 8]);
+render_routine(Ship) {
+    return oam_meta_spr(ship_x >> 8, ship_y >> 8, sprid, ship_list[((ship_rotation + 16) / 32) % 8]);
 }
 
 const val ship_palette[] = {
     BLACK, BLUE_1, ORANGE_2, LIGHT_BLUE,
-    0,0,0,0,
+    GRAYSCALE,
     0,0,0,0,
     0,0,0,0
 };

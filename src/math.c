@@ -61,3 +61,59 @@ signed short isqrt16(signed short x) {
 
     return L;
 }
+
+val quadrant;
+sbigval abs_x, abs_y;
+val low, high, mid, best_angle, i;
+sbigval best_error, error;
+sbigval lhs, rhs;
+val atan2(sbigval y, sbigval x) {
+    // Handle zero cases
+    if (x == 0 && y == 0) return 0;
+    if (x == 0) return (y > 0) ? 64 : 192; // 90° or 270°
+    if (y == 0) return (x > 0) ? 0 : 128;   // 0° or 180°
+    
+    // Determine quadrant
+    abs_x = (x > 0) ? x : -x;
+    abs_y = (y > 0) ? y : -y;
+    
+    if (x > 0 && y > 0) quadrant = 0;      // Q1: 0-64
+    else if (x < 0 && y > 0) quadrant = 1; // Q2: 64-128
+    else if (x < 0 && y < 0) quadrant = 2; // Q3: 128-192
+    else quadrant = 3;                      // Q4: 192-256
+    
+    // Binary search in first quadrant (0-64)
+    // We're looking for angle where tan(angle) = y/x
+    low = 0;
+    high = 64;
+    best_angle = 0;
+    best_error = 32767;
+    
+    for (i = 0; i < 8; ++i) { // 8 iterations gives ~0.5° accuracy
+        mid = (low + high) / 2;
+        
+        // Compare y/x with sin(mid)/cos(mid)
+        // Avoid division: y * cos(mid) vs x * sin(mid)
+        lhs = ((sbigval)abs_y * (sbigval)(cos(mid) - 128)) / 128;
+        rhs = ((sbigval)abs_x * (sbigval)(sin(mid) - 128)) / 128;
+        
+        error = lhs - rhs;
+        if (error < 0) error = -error;
+        
+        if (error < best_error) {
+            best_error = error;
+            best_angle = mid;
+        }
+        
+        if (lhs < rhs)
+            low = mid + 1;
+        else
+            high = mid;
+    }
+    
+    // Map to correct quadrant
+    if (quadrant == 0) return best_angle;
+    else if (quadrant == 1) return 128 - best_angle;
+    else if (quadrant == 2) return 128 + best_angle;
+    else return 256 - best_angle;
+}

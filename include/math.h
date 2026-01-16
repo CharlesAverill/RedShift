@@ -6,9 +6,12 @@
 val sin(val x);
 val cos(val x);
 val isqrt(val x);
-signed short isqrt16(signed short x);
+val atan2(sbigval x, sbigval y);
+sbigval isqrt16(sbigval x);
 
 #define max(x, y) (x < y ? y : x)
 #define min(x, y) (x < y ? x : y)
+#define abs(x) (x < 0 ? -x : x)
+#define sign(x) (x < 0 ? -1 : 1)
 
 #endif
