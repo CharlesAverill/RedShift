@@ -283,6 +283,10 @@ sounds_data:
    	.word irq	;$fffe irq / brk
 
 
-.segment "CHARS"
+.segment "CHR1"
 
 	.incbin "../assets/bg.chr"
+
+.segment "CHR2"
+
+	.incbin "../assets/title_screen/title_screen.chr"
