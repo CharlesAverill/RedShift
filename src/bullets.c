@@ -9,14 +9,6 @@ routine(Bullets_init) {
     n_bullets = 0;
 }
 
-static val i;
-routine(Bullets_update) {
-    for(i = 0; i < n_bullets; ++i) {
-        bullets[i].x += bullets[i].vx;
-        bullets[i].y += bullets[i].vy;
-    }
-}
-
 void delete_bullet(val n) {
     for(; n < n_bullets; ++n) {
         bullets[n] = bullets[n + 1];
@@ -24,19 +16,29 @@ void delete_bullet(val n) {
     --n_bullets;
 }
 
-static val nxt;
+static val i;
 static bullet b;
-render_routine(Bullets) {
-    nxt = sprid;
+routine(Bullets_update) {
     for(i = 0; i < n_bullets; ++i) {
         b = bullets[i];
+        b.x += b.vx;
+        b.y += b.vy;
         if (b.lifetime == BULLET_LIFETIME) {
             delete_bullet(i);
             --i;
         } else {
-            nxt = oam_spr(b.x >> 8, b.y >> 8, b.sprite, 2 | b.sprite_attrs, nxt);
-            ++bullets[i].lifetime;
+            ++b.lifetime;
+            bullets[i] = b;
         }
+    }
+}
+
+static val nxt;
+render_routine(Bullets) {
+    nxt = sprid;
+    for(i = 0; i < n_bullets; ++i) {
+        b = bullets[i];
+        nxt = oam_spr(b.x >> 8, b.y >> 8, b.sprite, 2 | b.sprite_attrs, nxt);
     }
     return nxt;
 }

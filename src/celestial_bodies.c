@@ -25,15 +25,23 @@ static CBody bodyi, bodyj;
 static bullet b;
 static Rect r1, r2;
 static bool deleted;
-#define GRAVITY_RANGE 64
+#define GRAVITY_RANGE 128
 #define GRAVITY_STRENGTH 2
 
 routine(CBodies_update) {
     // Cheap gravity simulation
     for(i = 0; i < n_bodies; ++i) {
         bodyi = bodies[i];
+        if (bodyi.dead)
+            continue;
+
         for(j = i + 1; j < n_bodies; ++j) {
             bodyj = bodies[j];
+            
+            // No gravity between large or dead objects
+            if ((bodyi.type == Asteroid && bodyj.type == Asteroid) || bodyj.dead)
+                continue;
+            
             dx = ((sbigval)bodyj.x - (sbigval)bodyi.x) >> 8;
             dy = ((sbigval)bodyj.y - (sbigval)bodyi.y) >> 8;
             
@@ -41,26 +49,40 @@ routine(CBodies_update) {
             if (dy > GRAVITY_RANGE || dy < -GRAVITY_RANGE) continue;
             
             if (dx > 0) {
-                bodyi.vx += GRAVITY_STRENGTH;
-                bodyj.vx -= GRAVITY_STRENGTH;
+                if (bodyi.type != Asteroid) bodyi.vx += GRAVITY_STRENGTH;
+                if (bodyj.type != Asteroid) bodyj.vx -= GRAVITY_STRENGTH;
             } else if (dx < 0) {
-                bodyi.vx -= GRAVITY_STRENGTH;
-                bodyj.vx += GRAVITY_STRENGTH;
+                if (bodyi.type != Asteroid) bodyi.vx -= GRAVITY_STRENGTH;
+                if (bodyj.type != Asteroid) bodyj.vx += GRAVITY_STRENGTH;
             }
             
             if (dy > 0) {
-                bodyi.vy += GRAVITY_STRENGTH;
-                bodyj.vy -= GRAVITY_STRENGTH;
+                if (bodyi.type != Asteroid) bodyi.vy += GRAVITY_STRENGTH;
+                if (bodyj.type != Asteroid) bodyj.vy -= GRAVITY_STRENGTH;
             } else if (dy < 0) {
-                bodyi.vy -= GRAVITY_STRENGTH;
-                bodyj.vy += GRAVITY_STRENGTH;
+                if (bodyi.type != Asteroid) bodyi.vy -= GRAVITY_STRENGTH;
+                if (bodyj.type != Asteroid) bodyj.vy += GRAVITY_STRENGTH;
             }
+            
+            bodies[j] = bodyj;
         }
+        bodies[i] = bodyi;
     }
 
     // Check for bullet collision, then apply velocity
     for(i = 0; i < n_bodies; ++i) {
         bodyi = bodies[i];
+        if (bodyi.dead) {
+            if (bodyi.dead_frame >= 24) {
+                delete_body(i);
+                --i;
+            } else {
+                ++bodyi.dead_frame;
+                bodies[i] = bodyi;
+            }
+            continue;
+        }
+
         r1.x = bodyi.x >> 8;
         r1.y = bodyi.y >> 8;
         r1.width = CBody_width(bodyi.type);
@@ -73,20 +95,21 @@ routine(CBodies_update) {
             r2.width = 8;
             r2.height = 8;
 
-            deleted = false;
             if (check_collision(&r1, &r2)) {
-                delete_body(i);
-                --i;
-                deleted = true;
+                bodyi.dead = true;
+                bodyi.dead_frame = 0;
+                bodyi.vx = 0;
+                bodyi.vy = 0;
                 break;
             }
         }
 
-        if (!deleted) {
+        if (!bodyi.dead) {
             bodyi.x += bodyi.vx;
             bodyi.y += bodyi.vy;
-            bodies[i] = bodyi;
         }
+
+        bodies[i] = bodyi;
     }
 }
 
@@ -101,7 +124,7 @@ static val nxt;
 render_routine(CBodies) {
     nxt = sprid;
     for(i = 0; i < n_bodies; ++i) {
-        nxt = oam_spr(bodies[i].x >> 8, bodies[i].y >> 8, CBody_sprite(bodies[i].type), 1, nxt);
+        nxt = oam_spr(bodies[i].x >> 8, bodies[i].y >> 8, CBody_sprite(bodies[i]), 1, nxt);
     }
     return nxt;
 }
@@ -114,11 +137,13 @@ void add_body(bigval x, bigval y, sbigval vx, sbigval vy, CBodyType type) {
     if (n_bodies >= MAX_BODIES)
         return;
 
-    bodies[n_bodies].x = x;
-    bodies[n_bodies].y = y;
-    bodies[n_bodies].vx = vx;
-    bodies[n_bodies].vy = vy;
-    bodies[n_bodies].type = type;
+    bodyi.x = x;
+    bodyi.y = y;
+    bodyi.vx = vx;
+    bodyi.vy = vy;
+    bodyi.type = type;
+    bodyi.dead = false;
+    bodies[n_bodies] = bodyi;
 
     ++n_bodies;
 }

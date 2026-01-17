@@ -46,7 +46,7 @@ val* itoa(val n, val* str) {
 
 void memset(val *ptr, val v, val n) {
     static val i;
-    for(i = 0; i < n; i++) {
+    for(i = 0; i < n; ++i) {
         ptr[i] = v;
     }
 }
