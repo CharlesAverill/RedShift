@@ -46,8 +46,24 @@ val isqrt(val x) {
     return L;
 }
 
-signed short isqrt16(signed short x) {
+signed short isqrt16s(signed short x) {
     static signed short L, R, M;
+    L = 0;
+    R = x + 1;
+
+    while (L != R - 1) {
+        M = (L + R) / 2;
+        if (M * M <= x)
+            L = M;
+        else
+            R = M;
+    }
+
+    return L;
+}
+
+bigval isqrt16(bigval x) {
+    static bigval L, R, M;
     L = 0;
     R = x + 1;
 

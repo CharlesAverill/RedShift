@@ -26,6 +26,7 @@ LD=ld65
 CL=cl65
 
 C_FILES := $(wildcard $(SRC)/*.c)
+S_FILES := $(filter-out $(SRC)/crt0.S,$(wildcard $(SRC)/*.S))
 O_FILES := $(patsubst $(SRC)/%.c,$(BUILD)/%.o,$(C_FILES))
 
 ASSETS := $(wildcard $(ASSETS)/*)

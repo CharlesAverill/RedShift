@@ -59,11 +59,11 @@ void main(void) {
         read_inputs();
 
         Ship_update();
-        CBodies_update();
         Bullets_update();
+        CBodies_update();
 
         render(Ship);
-        render(CBodies);
         render(Bullets);
+        render(CBodies);
     }
 }

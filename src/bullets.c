@@ -2,10 +2,8 @@
 #include "bullets.h"
 #include "neslib.h"
 
-#define MAX_BULLETS 5
-
-static val n_bullets = 0;
-static bullet bullets[MAX_BULLETS];
+val n_bullets = 0;
+bullet bullets[MAX_BULLETS];
 
 routine(Bullets_init) {
     n_bullets = 0;
@@ -27,32 +25,35 @@ void delete_bullet(val n) {
 }
 
 static val nxt;
+static bullet b;
 render_routine(Bullets) {
     nxt = sprid;
     for(i = 0; i < n_bullets; ++i) {
-        if (++bullets[i].lifetime == BULLET_LIFETIME) {
+        b = bullets[i];
+        if (b.lifetime == BULLET_LIFETIME) {
             delete_bullet(i);
             --i;
         } else {
-            nxt = oam_spr(bullets[i].x >> 8, bullets[i].y >> 8, bullets[i].sprite, 2 | bullets[i].sprite_attrs, nxt);
+            nxt = oam_spr(b.x >> 8, b.y >> 8, b.sprite, 2 | b.sprite_attrs, nxt);
+            ++bullets[i].lifetime;
         }
     }
+    return nxt;
 }
 
 val num_bullets(void) {
     return n_bullets;
 }
 
-static bullet new_bullet;
 static val sprite, attrs;
 void add_bullet(sbigval x, sbigval y, sbigval vx, sbigval vy, facing f) {
     if (n_bullets >= MAX_BULLETS)
         return;
 
-    bullets[n_bullets].x = x;
-    bullets[n_bullets].y = y;
-    bullets[n_bullets].vx = vx;
-    bullets[n_bullets].vy = vy;
+    b.x = x;
+    b.y = y;
+    b.vx = vx;
+    b.vy = vy;
     switch(f) {
         case Up:
             sprite = BULLET_VERT_SPRITE;
@@ -87,10 +88,12 @@ void add_bullet(sbigval x, sbigval y, sbigval vx, sbigval vy, facing f) {
             attrs = OAM_FLIP_H;
             break;
     }
-    bullets[n_bullets].sprite = sprite;
-    bullets[n_bullets].sprite_attrs = attrs;
+    b.sprite = sprite;
+    b.sprite_attrs = attrs;
 
-    bullets[n_bullets].lifetime = 0;
+    b.lifetime = 0;
+
+    bullets[n_bullets] = b;
 
     ++n_bullets;
 }

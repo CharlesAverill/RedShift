@@ -7,27 +7,26 @@
 #define BULLET_HORZ_SPRITE 0x87
 #define BULLET_DIAG_SPRITE 0x96
 
-#define BULLET_LIFETIME 32
+#define BULLET_LIFETIME 24
 #define BULLET_SPEED (sbigval)-6
 
 #define BULLET_PALETTE 0x0f, 0x15, 0x27, 0x30
 
 typedef struct bullet {
-    sbigval x, y;
+    bigval x, y;
     sbigval vx, vy;
     val sprite;
     val sprite_attrs;
     val lifetime;
 } bullet;
 
+#define MAX_BULLETS 2
+extern bullet bullets[MAX_BULLETS];
+extern val n_bullets;
+
 routine(Bullets_init);
 routine(Bullets_update);
 render_routine(Bullets);
-
-/**
- * @brief Get the number of bullets on scren
- */
-val num_bullets(void);
 
 /**
  * @brief Add a bullet to the screen
