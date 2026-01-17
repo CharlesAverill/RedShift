@@ -20,4 +20,15 @@ extern val sprid;
 
 #define NULL 0
 
+typedef enum facing {
+    Up,
+    UpLeft,
+    Left,
+    DownLeft,
+    Down,
+    DownRight,
+    Right,
+    UpRight
+} facing;
+
 #endif

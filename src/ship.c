@@ -1,6 +1,7 @@
 #include "ship.h"
 #include "controls.h"
 #include "math.h"
+#include "bullets.h"
 
 sbigval ship_x, ship_y;
 sbigval ship_vx, ship_vy;
@@ -21,6 +22,8 @@ val thrust_counter = 0;
 bool rotating_retrograde = false;
 val target_rotation;
 sbigval diff1, diff2;
+sbigval dx, dy;
+bool facing_up, facing_down;
 routine(Ship_update) {
     // Rotation
     if (down(LEFT))
@@ -83,10 +86,24 @@ routine(Ship_update) {
     // Apply velocity
     ship_x += ship_vx;
     ship_y += ship_vy;
+
+    // Blasters
+    #define SHIP_RADIUS (sbigval)8
+    if (triggered(A)) {
+        facing_up = ship_rotation < 32 || ship_rotation > 220;
+        facing_down = 96 < ship_rotation && ship_rotation < 160;
+        add_bullet(
+            ((ship_x >> 8) + 5 + (SHIP_RADIUS * ((sbigval)cos(ship_rotation & 31) - 128) / 128)) << 8,
+            ((ship_y >> 8) + (facing_up ? 8 : (facing_down ? 16 : 8)) + (SHIP_RADIUS * ((sbigval)sin(ship_rotation & 31) - 128) / 128)) << 8,
+            ship_vx + (BULLET_SPEED * ((sbigval)sin(ship_rotation) - 128) / 128 << 8),
+            ship_vy + (BULLET_SPEED * ((sbigval)cos(ship_rotation) - 128) / 128 << 8),
+            ((ship_rotation + 16) / 32) % 8
+        );
+    }
 }
 
 render_routine(Ship) {
-    return oam_meta_spr(ship_x >> 8, ship_y >> 8, sprid, ship_list[((ship_rotation + 16) / 32) % 8]);
+    return oam_meta_spr((ship_x >> 8) + 8, (ship_y >> 8) + 8, sprid, ship_list[((ship_rotation + 16) / 32) % 8]);
 }
 
 const val ship_0_data[]={

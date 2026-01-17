@@ -9,6 +9,7 @@
 #include "math.h"
 #include "controls.h"
 #include "bg.h"
+#include "bullets.h"
 
 const val bg_palette[] = {
     0x0f, 0x05, 0x03, 0x3C,
@@ -20,7 +21,7 @@ const val bg_palette[] = {
 const val sprite_palettes[] = {
     SHIP_PALETTE,
     GRAYSCALE,
-    0,0,0,0,
+    BULLET_PALETTE,
     0,0,0,0
 };
 
@@ -45,6 +46,7 @@ void main(void) {
 
     Ship_init();
     CBodies_init();
+    Bullets_init();
 
     while(true) {
         ppu_wait_nmi();
@@ -58,8 +60,10 @@ void main(void) {
 
         Ship_update();
         CBodies_update();
+        Bullets_update();
 
         render(Ship);
         render(CBodies);
+        render(Bullets);
     }
 }
