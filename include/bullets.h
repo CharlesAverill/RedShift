@@ -20,7 +20,7 @@ typedef struct bullet {
     val lifetime;
 } bullet;
 
-#define MAX_BULLETS 2
+#define MAX_BULLETS 3
 extern bullet bullets[MAX_BULLETS];
 extern val n_bullets;
 

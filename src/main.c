@@ -44,6 +44,9 @@ void main(void) {
 
     ppu_on_all();
 
+    // Play bgm
+    music_play(0);
+
     Ship_init();
     CBodies_init();
     Bullets_init();

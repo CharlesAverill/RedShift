@@ -29,7 +29,8 @@ C_FILES := $(wildcard $(SRC)/*.c)
 S_FILES := $(filter-out $(SRC)/crt0.S,$(wildcard $(SRC)/*.S))
 O_FILES := $(patsubst $(SRC)/%.c,$(BUILD)/%.o,$(C_FILES))
 
-ASSETS := $(wildcard $(ASSETS)/*)
+ASSET_FILES := $(wildcard $(ASSETS)/*)
+BGM := $(BUILD)/bgm.S
 
 # Flags
 INCLUDE_DIRS := $(INC) $(LIB)/neslib $(LIB)/famitone
@@ -41,10 +42,10 @@ LDFLAGS := -C $(CFG) $(BUILD)/crt0.o $(O_FILES) nes.lib \
 		   -Ln $(BUILD)/labels.txt --dbgfile $(BUILD)/dbg.txt
 
 build: $(NAME).nes
-$(NAME).nes: $(O_FILES) $(BUILD)/crt0.o $(CFG) $(ASSETS)
+$(NAME).nes: $(O_FILES) $(BUILD)/crt0.o $(CFG) $(ASSET_FILES)
 	$(LD) $(LDFLAGS) -o $(NAME).nes
 
-$(BUILD)/crt0.o: $(wildcard $(LIB)/neslib/*.s $(LIB)/neslib/*.sinc)
+$(BUILD)/crt0.o: $(wildcard $(LIB)/neslib/*.s $(LIB)/neslib/*.sinc) $(BGM) $(ASSET_FILES)
 	$(CL) -t nes -Oisr -c $(SRC)/crt0.S
 	@mv $(SRC)/crt0.o $(BUILD)
 
@@ -54,6 +55,10 @@ $(BUILD)/%.o: $(BUILD)/%.S
 $(BUILD)/%.S: $(SRC)/%.c
 	mkdir -p $(BUILD)
 	$(CC) $(CFLAGS) $< -o $@
+
+$(BGM): $(ASSETS)/music/bgm.txt
+	$(WINE) $(LIB)/famitone/text2data/text2vol5_2025.exe $< -ca65
+	mv $(ASSETS)/music/bgm.s $@
 
 yychr:
 	$(WINE) $(YYCHR)/YYCHR.exe
