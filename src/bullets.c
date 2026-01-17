@@ -1,6 +1,7 @@
 #include "types.h"
 #include "bullets.h"
 #include "neslib.h"
+#include "sound.h"
 
 val n_bullets = 0;
 bullet bullets[MAX_BULLETS];
@@ -98,4 +99,6 @@ void add_bullet(sbigval x, sbigval y, sbigval vx, sbigval vy, facing f) {
     bullets[n_bullets] = b;
 
     ++n_bullets;
+
+    sfx_play(SFX_BLASTER, SFX_CHANNEL);
 }

@@ -31,6 +31,7 @@ O_FILES := $(patsubst $(SRC)/%.c,$(BUILD)/%.o,$(C_FILES))
 
 ASSET_FILES := $(wildcard $(ASSETS)/*)
 BGM := $(BUILD)/bgm.S
+SFX := $(BUILD)/sfx.S
 
 # Flags
 INCLUDE_DIRS := $(INC) $(LIB)/neslib $(LIB)/famitone
@@ -45,7 +46,7 @@ build: $(NAME).nes
 $(NAME).nes: $(O_FILES) $(BUILD)/crt0.o $(CFG) $(ASSET_FILES)
 	$(LD) $(LDFLAGS) -o $(NAME).nes
 
-$(BUILD)/crt0.o: $(wildcard $(LIB)/neslib/*.s $(LIB)/neslib/*.sinc) $(BGM) $(ASSET_FILES)
+$(BUILD)/crt0.o: $(wildcard $(LIB)/neslib/*.s $(LIB)/neslib/*.sinc) $(BGM) $(SFX) $(ASSET_FILES)
 	$(CL) -t nes -Oisr -c $(SRC)/crt0.S
 	@mv $(SRC)/crt0.o $(BUILD)
 
@@ -59,6 +60,10 @@ $(BUILD)/%.S: $(SRC)/%.c
 $(BGM): $(ASSETS)/music/bgm.txt
 	$(WINE) $(LIB)/famitone/text2data/text2vol5_2025.exe $< -ca65
 	mv $(ASSETS)/music/bgm.s $@
+
+$(SFX): $(ASSETS)/sfx/sfx.nsf
+	$(WINE) $(LIB)/famitone/nsf2data/nsf2data5.exe $< -ca65
+	mv $(ASSETS)/sfx/sfx.s $@
 
 yychr:
 	$(WINE) $(YYCHR)/YYCHR.exe

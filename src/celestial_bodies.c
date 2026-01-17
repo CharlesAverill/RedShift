@@ -4,6 +4,7 @@
 #include "math.h"
 #include "bullets.h"
 #include "utils.h"
+#include "sound.h"
 
 void delete_body(val n);
 
@@ -109,6 +110,7 @@ routine(CBodies_update) {
                 bodyi.dead_frame = 0;
                 bodyi.vx = 0;
                 bodyi.vy = 0;
+                sfx_play(SFX_EXPLOSION, SFX_CHANNEL);
                 break;
             }
         }
