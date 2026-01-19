@@ -73,6 +73,17 @@ nesst:
 nesifier:
 	$(WINE) $(TOOLS)/NESIFIER.exe
 
+llvm-mos:
+	git clone https://github.com/CharlesAverill/llvm-mos-sdk $(TOOLS)/llvm-mos-sdk
+	wget https://github.com/llvm-mos/llvm-mos/releases/download/llvm-mos-linux-main/llvm-mos-linux-main.tar.xz -O tools/llvm-mos-linux-debug.tar.xz
+	mkdir -p tools/llvm-mos
+	tar -xf tools/llvm-mos-linux-debug.tar.xz -C tools/llvm-mos
+	cd $(TOOLS)/llvm-mos-sdk && \
+		git checkout nes-famitone5 && \
+		mkdir build && cd build && \
+		cmake -G "Ninja" -DCMAKE_INSTALL_PREFIX=../../llvm-mos .. && \
+		ninja install
+
 clean:
 	rm -rf build
 
