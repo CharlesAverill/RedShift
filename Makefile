@@ -20,50 +20,40 @@ MESEN := mesen
 FCEUX := fceux
 NESST := $(TOOLS)/NESst
 
-CC=cc65
-AS=ca65
-LD=ld65
-CL=cl65
+CC=~/Desktop/llvm-mos/bin/mos-nes-cnrom-clang
+CA=ca65
 
 C_FILES := $(wildcard $(SRC)/*.c)
 S_FILES := $(filter-out $(SRC)/crt0.S,$(wildcard $(SRC)/*.S))
-O_FILES := $(patsubst $(SRC)/%.c,$(BUILD)/%.o,$(C_FILES))
 
 ASSET_FILES := $(wildcard $(ASSETS)/*)
-BGM := $(BUILD)/bgm.S
-SFX := $(BUILD)/sfx.S
+BGM := $(BUILD)/bgm.o
+SFX := $(BUILD)/sfx.o
 
 # Flags
-INCLUDE_DIRS := $(INC) $(LIB)/neslib $(LIB)/famitone
+INCLUDE_DIRS := $(INC)
 INCLUDE := $(foreach dir, $(INCLUDE_DIRS), -I$(dir))
 
-CFLAGS := $(INCLUDE) -Oirs --add-source -W -pointer-sign --standard cc65
-ASFLAGS := -g $(INCLUDE)
-LDFLAGS := -C $(CFG) $(BUILD)/crt0.o $(O_FILES) nes.lib \
-		   -Ln $(BUILD)/labels.txt --dbgfile $(BUILD)/dbg.txt
+CFLAGS := $(INCLUDE) -Os -flto -lneslib -lfamitone2 -lnesdoug
+# LDFLAGS := 
 
 build: $(NAME).nes
-$(NAME).nes: $(O_FILES) $(BUILD)/crt0.o $(CFG) $(ASSET_FILES)
-	$(LD) $(LDFLAGS) -o $(NAME).nes
-
-$(BUILD)/crt0.o: $(wildcard $(LIB)/neslib/*.s $(LIB)/neslib/*.sinc) $(BGM) $(SFX) $(ASSET_FILES)
-	$(CL) -t nes -Oisr -c $(SRC)/crt0.S
-	@mv $(SRC)/crt0.o $(BUILD)
-
-$(BUILD)/%.o: $(BUILD)/%.S
-	$(AS) $(ASFLAGS) $< -o $@
-
-$(BUILD)/%.S: $(SRC)/%.c
-	mkdir -p $(BUILD)
-	$(CC) $(CFLAGS) $< -o $@
+$(NAME).nes: $(C_FILES) $(ASSET_FILES) $(BGM) $(SFX)
+	$(CC) $(CFLAGS) $(C_FILES) $(S_FILES) $(BGM) $(SFX) -o $@
 
 $(BGM): $(ASSETS)/music/bgm.txt
+	mkdir -p $(BUILD)
 	$(WINE) $(LIB)/famitone/text2data/text2vol5_2025.exe $< -ca65
-	mv $(ASSETS)/music/bgm.s $@
+	mv $(ASSETS)/music/bgm.s $(BUILD)
+	sed -i 's/bgm_music_data:/.export bgm_music_data\nbgm_music_data:/g' $(BUILD)/bgm.s
+	$(CA) $(BUILD)/bgm.s -o $@
 
 $(SFX): $(ASSETS)/sfx/sfx.nsf
+	mkdir -p $(BUILD)
 	$(WINE) $(LIB)/famitone/nsf2data/nsf2data5.exe $< -ca65
-	mv $(ASSETS)/sfx/sfx.s $@
+	mv $(ASSETS)/sfx/sfx.s $(BUILD)
+	sed -i 's/sounds:/.export sounds\nsounds:/g' $(BUILD)/sfx.s
+	$(CA) $(BUILD)/sfx.s -o $@
 
 yychr:
 	$(WINE) $(YYCHR)/YYCHR.exe

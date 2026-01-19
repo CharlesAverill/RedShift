@@ -16,11 +16,11 @@ typedef val bool;
 #define true 1
 #define false 0
 
-#define routine(id) void __fastcall__ id(void)
+#define routine(id) void id(void)
 
-extern val sprid;
-#define render_routine(id) val __fastcall__ Render_ ## id (void)
-#define render(id) sprid = Render_ ## id ()
+// extern val sprid;
+#define render_routine(id) void Render_ ## id (void)
+#define render(id) Render_ ## id ()
 
 #define NULL 0
 

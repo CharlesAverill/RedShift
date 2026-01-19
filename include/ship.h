@@ -1,7 +1,7 @@
 #ifndef SHIP_H
 #define SHIP_H
 
-#include "neslib.h"
+#include <neslib.h>
 #include "palette.h"
 #include "types.h"
 

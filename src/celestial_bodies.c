@@ -1,6 +1,6 @@
 #include "types.h"
 #include "celestial_bodies.h"
-#include "neslib.h"
+#include <neslib.h>
 #include "math.h"
 #include "bullets.h"
 #include "utils.h"
@@ -131,13 +131,13 @@ void delete_body(val n) {
     --n_bodies;
 }
 
-static val nxt;
+// static val nxt;
 render_routine(CBodies) {
-    nxt = sprid;
+    // nxt = sprid;
     for(i = 0; i < n_bodies; ++i) {
-        nxt = oam_spr(bodies[i].x >> 8, bodies[i].y >> 8, CBody_sprite(bodies[i]), 1, nxt);
+        oam_spr(bodies[i].x >> 8, bodies[i].y >> 8, CBody_sprite(bodies[i]), 1);
     }
-    return nxt;
+    // return nxt;
 }
 
 val num_bodies(void) {

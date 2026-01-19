@@ -1,7 +1,7 @@
 #ifndef CELESTIAL_BODIES_H
 #define CELESTIAL_BODIES_H
 
-#include "neslib.h"
+#include <neslib.h>
 #include "types.h"
 
 #define _ASTEROID_ROW1 128

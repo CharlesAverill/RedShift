@@ -1,6 +1,6 @@
 #include "types.h"
 #include "bullets.h"
-#include "neslib.h"
+#include <neslib.h>
 #include "sound.h"
 
 val n_bullets = 0;
@@ -34,14 +34,14 @@ routine(Bullets_update) {
     }
 }
 
-static val nxt;
+// static val nxt;
 render_routine(Bullets) {
-    nxt = sprid;
+    // nxt = sprid;
     for(i = 0; i < n_bullets; ++i) {
         b = bullets[i];
-        nxt = oam_spr(b.x >> 8, b.y >> 8, b.sprite, 2 | b.sprite_attrs, nxt);
+        oam_spr(b.x >> 8, b.y >> 8, b.sprite, 2 | b.sprite_attrs);
     }
-    return nxt;
+    // return nxt;
 }
 
 val num_bullets(void) {

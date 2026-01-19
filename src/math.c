@@ -20,12 +20,12 @@ const val sine_table_256[256] = {
      79,  82,  85,  88,  90,  93,  97, 100, 103, 106, 109, 112, 115, 118, 121, 124
 };
 
-val sin(val x) {
+val _sin(val x) {
     return sine_table_256[x];
 }
 
-val cos(val x) {
-    return sin(x + 64);
+val _cos(val x) {
+    return _sin(x + 64);
 }
 
 // https://en.wikipedia.org/wiki/Integer_square_root#Algorithm_using_binary_search
@@ -83,7 +83,7 @@ sbigval abs_x, abs_y;
 val low, high, mid, best_angle, i;
 sbigval best_error, error;
 sbigval lhs, rhs;
-val atan2(sbigval y, sbigval x) {
+val _atan2(sbigval y, sbigval x) {
     // Handle zero cases
     if (x == 0 && y == 0) return 0;
     if (x == 0) return (y > 0) ? 64 : 192; // 90° or 270°
@@ -108,10 +108,10 @@ val atan2(sbigval y, sbigval x) {
     for (i = 0; i < 8; ++i) { // 8 iterations gives ~0.5° accuracy
         mid = (low + high) / 2;
         
-        // Compare y/x with sin(mid)/cos(mid)
-        // Avoid division: y * cos(mid) vs x * sin(mid)
-        lhs = ((sbigval)abs_y * (sbigval)(cos(mid) - 128)) / 128;
-        rhs = ((sbigval)abs_x * (sbigval)(sin(mid) - 128)) / 128;
+        // Compare y/x with _sin(mid)/_cos(mid)
+        // Avoid division: y * _cos(mid) vs x * _sin(mid)
+        lhs = ((sbigval)abs_y * (sbigval)(_cos(mid) - 128)) / 128;
+        rhs = ((sbigval)abs_x * (sbigval)(_sin(mid) - 128)) / 128;
         
         error = lhs - rhs;
         if (error < 0) error = -error;

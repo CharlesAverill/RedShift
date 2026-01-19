@@ -1,4 +1,6 @@
-#include "neslib.h"
+#include <neslib.h>
+#include <famitone2.h>
+#include <mapper.h>
 #include "palette.h"
 #include "types.h"
 #include "geometry.h"
@@ -11,6 +13,9 @@
 #include "bg.h"
 #include "bullets.h"
 #include "title_screen.h"
+#include "sound.h"
+
+MAPPER_CHR_ROM_KB(16);
 
 const val bg_palette[] = {
     0x0f, 0x05, 0x03, 0x3C,
@@ -33,11 +38,6 @@ const val sprite_palettes[] = {
     0,0,0,0
 };
 
-
-#pragma bss-name(push, "ZEROPAGE")
-const unsigned char const bus_conflict_fix[4]={0,1,2,3};
-#define POKE(addr,val)     (*(unsigned char*) (addr) = (val))
-
 val btn_down, btn_new;
 val sprid;
 
@@ -45,7 +45,7 @@ val frame_counter = 1;
 val brightness = 1;
 bool darkening = true;
 
-void pal_fade_to(unsigned to)
+void _pal_fade_to(unsigned to)
 {
   val bright = 3 + brightness;
   while(bright!=to)
@@ -58,11 +58,12 @@ void pal_fade_to(unsigned to)
 //   if (!to) music_stop();
 }
 
-void main(void) {
+int main(void) {
     // Turn off the screen
     ppu_off();
 
-    POKE(bus_conflict_fix + 1, 1);
+    // Load Bank 1 for title screen
+    set_chr_bank(1);
 
     // Set up title screen
     ppu_mask(0x1e | (1 << 5)); // red emphasis
@@ -71,6 +72,7 @@ void main(void) {
     vram_unrle(title_screen);
 
     // Play bgm
+    // music_init(bgm_music_data);
     music_play(0);
 
     ppu_on_all();
@@ -108,7 +110,7 @@ void main(void) {
         ++frame_counter;
     }
 
-    pal_fade_to(0);
+    _pal_fade_to(0);
     ppu_mask(0x1e);
     ppu_off();
 
@@ -116,7 +118,7 @@ void main(void) {
     // not sure why, but non-standard brightness breaks bank switching
     // Took me hours to figure that out.
     pal_bright(4);
-    POKE(bus_conflict_fix + 0, 0);
+    set_chr_bank(0);
 
     // Draw background
     bank_bg(1);
@@ -127,6 +129,9 @@ void main(void) {
     // Prepare to draw sprites
     bank_spr(0);
     pal_spr(sprite_palettes);
+
+    // Enable sfx
+    sfx_init(sounds);
 
     ppu_on_all();
 

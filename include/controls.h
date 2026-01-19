@@ -2,7 +2,7 @@
 #define CONTROLS_H
 
 #include "types.h"
-#include "neslib.h"
+#include <neslib.h>
 
 extern val btn_down, btn_new;
 
@@ -14,4 +14,4 @@ extern val btn_down, btn_new;
 #define down(BTN) (btn_down & (PAD_ ## BTN))
 #define triggered(BTN) (btn_new & (PAD_ ## BTN))
 
-#endif CONTROLS_H
+#endif

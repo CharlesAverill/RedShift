@@ -1,36 +1,36 @@
 #include "types.h"
 #include "string.h"
 
-val strlen(val* s) {
-    static val len;
-    while(*s) {
-        ++s;
-        ++len;
-    }
-    return len;
-}
+// val strlen(val* s) {
+//     static val len;
+//     while(*s) {
+//         ++s;
+//         ++len;
+//     }
+//     return len;
+// }
 
-void strcat(val* dst, val* src) {
-    while(*dst)
-        ++dst;
+// void strcat(val* dst, val* src) {
+//     while(*dst)
+//         ++dst;
 
-    while(*src) {
-        *dst = *src;
-        ++dst;
-        ++src;
-    }
+//     while(*src) {
+//         *dst = *src;
+//         ++dst;
+//         ++src;
+//     }
 
-    *dst = '\0';
-}
+//     *dst = '\0';
+// }
 
-void strncpy(val* dst, val* src, val n) {
-    static val i;
-    for(i = 0; i < n; ++i) {
-        *dst = *src;
-        ++dst;
-        ++src;
-    }
-}
+// void strncpy(val* dst, val* src, val n) {
+//     static val i;
+//     for(i = 0; i < n; ++i) {
+//         *dst = *src;
+//         ++dst;
+//         ++src;
+//     }
+// }
 
 val* itoa(val n, val* str) {
     val* ptr = str + 4;
@@ -44,9 +44,9 @@ val* itoa(val n, val* str) {
     return ptr;
 }
 
-void memset(val *ptr, val v, val n) {
-    static val i;
-    for(i = 0; i < n; ++i) {
-        ptr[i] = v;
-    }
-}
+// void memset(val *ptr, val v, val n) {
+//     static val i;
+//     for(i = 0; i < n; ++i) {
+//         ptr[i] = v;
+//     }
+// }
