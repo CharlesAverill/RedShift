@@ -12,16 +12,16 @@
 
 #define BULLET_PALETTE 0x0f, 0x15, 0x27, 0x30
 
-typedef struct bullet {
+typedef struct Bullet {
     bigval x, y;
     sbigval vx, vy;
     val sprite;
     val sprite_attrs;
     val lifetime;
-} bullet;
+} Bullet;
 
 #define MAX_BULLETS 3
-extern bullet bullets[MAX_BULLETS];
+extern Bullet bullets[MAX_BULLETS];
 extern val n_bullets;
 
 routine(Bullets_init);

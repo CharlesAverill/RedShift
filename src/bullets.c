@@ -4,7 +4,7 @@
 #include "sound.h"
 
 val n_bullets = 0;
-bullet bullets[MAX_BULLETS];
+Bullet bullets[MAX_BULLETS];
 
 routine(Bullets_init) {
     n_bullets = 0;
@@ -18,7 +18,7 @@ void delete_bullet(val n) {
 }
 
 static val i;
-static bullet b;
+static Bullet b;
 routine(Bullets_update) {
     for(i = 0; i < n_bullets; ++i) {
         b = bullets[i];

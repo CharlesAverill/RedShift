@@ -35,7 +35,7 @@ const val sprite_palettes[] = {
 
 
 #pragma bss-name(push, "ZEROPAGE")
-const unsigned char const bus_conflict_fix[4]={0,1,2,3};
+const unsigned char bus_conflict_fix[4]={0,1,2,3};
 #define POKE(addr,val)     (*(unsigned char*) (addr) = (val))
 
 val btn_down, btn_new;

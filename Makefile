@@ -37,14 +37,14 @@ SFX := $(BUILD)/sfx.S
 INCLUDE_DIRS := $(INC) $(LIB)/neslib $(LIB)/famitone
 INCLUDE := $(foreach dir, $(INCLUDE_DIRS), -I$(dir))
 
-CFLAGS := $(INCLUDE) -Oirs --add-source -W -pointer-sign --standard cc65
+CFLAGS := $(INCLUDE) -Oirs --add-source -W -pointer-sign --standard cc65 -g
 ASFLAGS := -g $(INCLUDE)
 LDFLAGS := -C $(CFG) $(BUILD)/crt0.o $(O_FILES) nes.lib \
 		   -Ln $(BUILD)/labels.txt --dbgfile $(BUILD)/dbg.txt
 
 build: $(NAME).nes
 $(NAME).nes: $(O_FILES) $(BUILD)/crt0.o $(CFG) $(ASSET_FILES)
-	$(LD) $(LDFLAGS) -o $(NAME).nes
+	$(LD) $(LDFLAGS) --dbgfile $(NAME).dbg -o $(NAME).nes
 
 $(BUILD)/crt0.o: $(wildcard $(LIB)/neslib/*.s $(LIB)/neslib/*.sinc) $(BGM) $(SFX) $(ASSET_FILES)
 	$(CL) -t nes -Oisr -c $(SRC)/crt0.S
