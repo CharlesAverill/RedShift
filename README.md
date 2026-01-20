@@ -1,6 +1,6 @@
 # Red Shift
 
-![title screen](./assets/title_screen/title_screen.png)
+![title screen](./screenshots/title_screen.png)
 
 This is a tiny, in-progress [Asteroids](https://en.wikipedia.org/wiki/Asteroids_(video_game)) clone for the [NES](https://en.wikipedia.org/wiki/Nintendo_Entertainment_System).
 It's written using [neslib](https://github.com/clbr/neslib) and [famitone5](https://github.com/nesdoug/famitone5.0), and I utilized a bunch of different [tools](./tools) for formatting the graphics and audio in the correct way.
