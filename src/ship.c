@@ -131,6 +131,7 @@ render_routine(Ship) {
         } else if (music_stopped && kill_ship_timer > 120) {
             music_stopped = false;
             music_play(1);
+            pal_bright(3);
         }
 
         return oam_meta_spr((ship_x >> 8) + 8, (ship_y >> 8) + 8, sprid, explosion_list[++frame_counter % 32 < 16]);
