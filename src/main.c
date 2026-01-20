@@ -137,18 +137,17 @@ void main(void) {
     Bullets_init();
 
     while(true) {
-        ppu_wait_nmi();
-
-        // Clear sprites
-        sprid = 0;
-        oam_clear();
-
         // Read controller input
         read_inputs();
 
         Ship_update();
         Bullets_update();
         CBodies_update();
+
+        ppu_wait_nmi();
+        // Clear sprites
+        sprid = 0;
+        oam_clear();
 
         render(Ship);
         render(Bullets);

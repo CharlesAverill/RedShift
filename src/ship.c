@@ -7,6 +7,9 @@ bigval ship_x, ship_y;
 sbigval ship_vx, ship_vy;
 val ship_rotation;
 bool kill_ship_flag;
+static val kill_ship_timer;
+static bool ship_dead;
+static bool music_stopped;
 
 routine(Ship_init) {
     ship_x = (bigval)128 << 8;
@@ -17,7 +20,8 @@ routine(Ship_init) {
 
     ship_rotation = 0;
 
-    kill_ship_flag = false;
+    kill_ship_flag = ship_dead = music_stopped = false;
+    kill_ship_timer = 0;
 }
 
 sbigval f_x, f_y;
@@ -28,8 +32,13 @@ sbigval diff1, diff2;
 sbigval dx, dy;
 bool facing_up, facing_down;
 routine(Ship_update) {
-    if (kill_ship_flag)
-        return;
+    if (kill_ship_flag) {
+        if (++kill_ship_timer % 20 == 0) {
+            ship_vx /= 2;
+            ship_vy /= 2;
+        }
+        goto apply_velocity;
+    }
 
     // Rotation
     if (down(LEFT))
@@ -88,10 +97,6 @@ routine(Ship_update) {
     if (ship_vx < -MAX_SPEED) ship_vx = -MAX_SPEED;
     if (ship_vy > MAX_SPEED) ship_vy = MAX_SPEED;
     if (ship_vy < -MAX_SPEED) ship_vy = -MAX_SPEED;
-    
-    // Apply velocity
-    ship_x += ship_vx;
-    ship_y += ship_vy;
 
     // Blasters
     #define SHIP_RADIUS (sbigval)8
@@ -106,16 +111,30 @@ routine(Ship_update) {
             ((ship_rotation + 16) / 32) & 7
         );
     }
+    
+    // Apply velocity
+apply_velocity:
+    ship_x += ship_vx;
+    ship_y += ship_vy;
 }
 
 static val sprite;
 static val frame_counter;
 render_routine(Ship) {
     // sprite = kill_ship_flag ? explosion_list[++frame_counter % 2] : ship_list[((ship_rotation + 16) / 32) & 7];
-    sprite = ship_list[((ship_rotation + 16) / 32) & 7];
-    if (kill_ship_flag)
+    if (kill_ship_flag && (ship_dead || kill_ship_timer > 240)) {
+        if (!ship_dead && kill_ship_timer > 240) {
+            ship_dead = true;
+            music_stopped = true;
+            kill_ship_timer = 0;
+            ppu_mask(0x1e | (1 << 5)); // red emphasis
+        } else if (music_stopped && kill_ship_timer > 120) {
+            music_stopped = false;
+            music_play(1);
+        }
+
         return oam_meta_spr((ship_x >> 8) + 8, (ship_y >> 8) + 8, sprid, explosion_list[++frame_counter % 32 < 16]);
-    else
+    } else
         return oam_meta_spr((ship_x >> 8) + 8, (ship_y >> 8) + 8, sprid, ship_list[((ship_rotation + 16) / 32) & 7]);
     // return oam_meta_spr((ship_x >> 8) + 8, (ship_y >> 8) + 8, sprid, ship_list[((ship_rotation + 16) / 32) & 7]);
 }

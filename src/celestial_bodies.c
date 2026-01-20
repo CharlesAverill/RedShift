@@ -183,44 +183,57 @@ collision_check:
             continue;
         }
         
-        r1.x = bodyi_ptr->x >> 8;
-        r1.y = bodyi_ptr->y >> 8;
-        r1.width = CBody_width(bodyi_ptr->type);
-        r1.height = CBody_height(bodyi_ptr->type);
-        
-        for(j = 0; j < n_bullets; ++j) {
-            // // Fast early rejection
-            dx = bullet_x[j] - r1.x;
-            if (dx > r1.width || dx < -8)
-                continue;
-                
-            dy = bullet_y[j] - r1.y;
-            if (dy > r1.height || dy < -8)
-                continue;
+        if (!kill_ship_flag) {
+            r1.x = bodyi_ptr->x >> 8;
+            r1.y = bodyi_ptr->y >> 8;
+            r1.width = CBody_width(bodyi_ptr->type);
+            r1.height = CBody_height(bodyi_ptr->type);
             
-            // Passed quick check, do full collision
-            r2.x = bullet_x[j];
-            r2.y = bullet_y[j];
-            r2.width = r2.height = 8;
+            for(j = 0; j < n_bullets; ++j) {
+                // // Fast early rejection
+                dx = bullet_x[j] - r1.x;
+                if (dx > r1.width || dx < -8)
+                    continue;
+                    
+                dy = bullet_y[j] - r1.y;
+                if (dy > r1.height || dy < -8)
+                    continue;
+                
+                // Passed quick check, do full collision
+                r2.x = bullet_x[j];
+                r2.y = bullet_y[j];
+                r2.width = r2.height = 8;
+                if (check_collision(&r1, &r2)) {
+                    bodyi_ptr->dead = true;
+                    bodyi_ptr->dead_frame = 0;
+                    bodyi_ptr->vx = 0;
+                    bodyi_ptr->vy = 0;
+                    if (!kill_ship_flag)
+                        sfx_play(SFX_EXPLOSION, SFX_CHANNEL);
+                    break;
+                }
+            }
+            
+            if (bodyi_ptr->dead)
+                continue;
+
+            // Check if collided with ship
+            r2.x = (ship_x >> 8) + 8;
+            r2.y = (ship_y >> 8) + 8;
+            r2.width = 16;
+            r2.height = 16;
             if (check_collision(&r1, &r2)) {
+                kill_ship_flag = true;
+                music_stop();
+                sfx_play(SFX_GAME_OVER, SFX_CHANNEL);
+
+                // Destroy asteroid too
                 bodyi_ptr->dead = true;
                 bodyi_ptr->dead_frame = 0;
                 bodyi_ptr->vx = 0;
                 bodyi_ptr->vy = 0;
-                sfx_play(SFX_EXPLOSION, SFX_CHANNEL);
-                break;
             }
         }
-        
-        if (bodyi_ptr->dead)
-            continue;
-
-        // Check if collided with ship
-        r2.x = (ship_x >> 8) + 8;
-        r2.y = (ship_y >> 8) + 8;
-        r2.width = 16;
-        r2.height = 16;
-        kill_ship_flag |= check_collision(&r1, &r2);
         
         // Apply velocity to position
         bodyi_ptr->x += bodyi_ptr->vx;
