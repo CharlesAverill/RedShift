@@ -7,7 +7,11 @@
 
 extern const val* const ship_list[];
 extern const val* const explosion_list[];
-const val* const shield_list[];
+
+extern const val shield_up[];
+extern const val shield_down[];
+extern const val shield_left[];
+extern const val shield_right[];
 
 #define SHIP_SPRID 0
 #define SHIP_UP ship_list[0]

@@ -27,7 +27,7 @@ routine(Ship_init) {
     kill_ship_timer = 0;
 
     health = 4;
-    iframe_ctr = 0;
+    iframe_ctr = 1;
 }
 
 sbigval f_x, f_y;
@@ -128,10 +128,31 @@ apply_velocity:
 }
 
 static val frame_counter;
+static val nxt;
 render_routine(Ship) {
-    // Flicker when invulnerable
-    if (iframe_ctr && iframe_ctr % 2)
-        return sprid;
+    nxt = sprid;
+
+    // Flicker and show shields when invulnerable
+    if (iframe_ctr) {
+        switch(health) {
+            case 4: // all sides
+                nxt = oam_meta_spr((ship_x >> 8) + 8, (ship_y >> 8) + 28, nxt, shield_down);
+                // intentional fall through
+            case 3: // above, left, right
+                nxt = oam_meta_spr((ship_x >> 8) + 8, (ship_y >> 8) - 4, nxt, shield_up);
+                // intentional fall through
+            case 2: // left, right
+                nxt = oam_meta_spr((ship_x >> 8) - 4, (ship_y >> 8) + 8, nxt, shield_left);
+                nxt = oam_meta_spr((ship_x >> 8) + 28, (ship_y >> 8) + 8, nxt, shield_right);
+                break;
+            case 1: // above
+                nxt = oam_meta_spr((ship_x >> 8) + 8, (ship_y >> 8) - 4, nxt, shield_up);
+                break;
+        }
+
+        if (iframe_ctr % 2)
+            return nxt;
+    }
 
     // There's some weirdness here if I try to assign to a `sprite` value that's
     // then passed to a single oam_meta_spr call
@@ -147,9 +168,9 @@ render_routine(Ship) {
             pal_bright(3);
         }
 
-        return oam_meta_spr((ship_x >> 8) + 8, (ship_y >> 8) + 8, sprid, explosion_list[++frame_counter % 32 < 16]);
+        return oam_meta_spr((ship_x >> 8) + 8, (ship_y >> 8) + 8, nxt, explosion_list[++frame_counter % 32 < 16]);
     } else
-        return oam_meta_spr((ship_x >> 8) + 8, (ship_y >> 8) + 8, sprid, ship_list[((ship_rotation + 16) / 32) & 7]);
+        return oam_meta_spr((ship_x >> 8) + 8, (ship_y >> 8) + 8, nxt, ship_list[((ship_rotation + 16) / 32) & 7]);
 }
 
 routine(ship_damage) {
@@ -300,11 +321,4 @@ const unsigned char shield_right[]={
 	  0,  0,0xb5,0|OAM_FLIP_H|OAM_FLIP_V,
 	  0,  8,0xb5,0|OAM_FLIP_H,
 	128
-};
-
-const val* const shield_list[] = {
-    shield_up,
-    shield_down,
-    shield_left,
-    shield_right
 };
