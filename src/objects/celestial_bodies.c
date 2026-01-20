@@ -14,7 +14,7 @@ const val CBody_dead_sprites[2] = {EXPLOSION_1_SPRITE, EXPLOSION_2_SPRITE};
 const val CBody_widths[CBodyTypeEnd] = {8, 8, 8};
 const val CBody_heights[CBodyTypeEnd] = {8, 8, 8};
 
-#define CBody_sprite(body) (body.dead ? CBody_dead_sprites[(body.dead_frame & 8) >> 3] : CBody_sprites[body.type])
+#define CBody_sprite(body) (body->dead ? CBody_dead_sprites[(body->dead_frame & 8) >> 3] : CBody_sprites[body->type])
 #define CBody_width(type) CBody_widths[type]
 #define CBody_height(type) CBody_heights[type]
 
@@ -249,7 +249,8 @@ static val nxt;
 render_routine(CBodies) {
     nxt = sprid;
     for(i = 0; i < n_bodies; ++i) {
-        nxt = oam_spr(bodies[i].x >> 8, bodies[i].y >> 8, CBody_sprite(bodies[i]), 1 | bodies[i].attrs, nxt);
+        bodyi_ptr = &bodies[i];
+        nxt = oam_spr(bodyi_ptr->x >> 8, bodyi_ptr->y >> 8, CBody_sprite(bodyi_ptr), 1 | bodyi_ptr->attrs, nxt);
     }
     return nxt;
 }
