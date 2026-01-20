@@ -113,10 +113,6 @@ void main(void) {
     ppu_mask(0x1e);
     ppu_off();
 
-    // Switch CHRs
-    // not sure why, but non-standard brightness breaks bank switching
-    // Took me hours to figure that out.
-    pal_bright(4);
     POKE(bus_conflict_fix + 0, 0);
 
     // Draw background
@@ -129,7 +125,10 @@ void main(void) {
     bank_spr(0);
     pal_spr(sprite_palettes);
 
+    pal_bright(0);
     ppu_on_all();
+    brightness = -2;
+    pal_fade_to(4);
 
     Ship_init();
     CBodies_init();
