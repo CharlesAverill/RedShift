@@ -5,15 +5,8 @@
 #include "palette.h"
 #include "types.h"
 
-extern const val ship_0_data[];
-extern const val ship_1_data[];
-extern const val ship_2_data[];
-extern const val ship_3_data[];
-extern const val ship_4_data[];
-extern const val ship_5_data[];
-extern const val ship_6_data[];
-extern const val ship_7_data[];
 extern const val* const ship_list[];
+extern const val* const explosion_list[];
 
 #define SHIP_SPRID 0
 #define SHIP_UP ship_list[0]
@@ -26,6 +19,7 @@ extern const val* const ship_list[];
 #define SHIP_UR ship_list[7]
 
 #define SHIP_PALETTE BLACK, BLUE_1, ORANGE_2, LIGHT_BLUE
+#define EXPLOSION_PALETTE BLACK, ORANGE, LIGHT_BLUE, LIGHT_YELLOW
 
 // kg
 #define SHIP_MASS 64
@@ -40,6 +34,7 @@ extern const val* const ship_list[];
 extern bigval ship_x, ship_y;
 extern val ship_rotation;
 extern sbigval ship_vx, ship_vy;
+extern bool kill_ship_flag;
 
 routine(Ship_init);
 routine(Ship_update);

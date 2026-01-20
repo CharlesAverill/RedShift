@@ -5,6 +5,7 @@
 #include "bullets.h"
 #include "utils.h"
 #include "sound.h"
+#include "ship.h"
 
 void delete_body(val n);
 
@@ -26,6 +27,14 @@ static CBody bodies[MAX_BODIES];
 static val i, j;
 static val spawn_timer;
 
+static val out;
+val random_attrs(void) {
+    out = 0;
+    out |= rand8() & OAM_FLIP_H;
+    out |= rand8() & OAM_FLIP_V;
+    return out;
+}
+
 routine(CBodies_init) {
     n_bodies = 0;
     spawn_timer = 0;
@@ -43,11 +52,14 @@ static sbigval bodyi_x, bodyi_y, bodyj_x, bodyj_y;
 static sbigval bodyi_vx, bodyi_vy, bodyj_vx, bodyj_vy;
 
 #define GRAVITY_RANGE 128
-#define GRAVITY_STRENGTH 2
+#define GRAVITY_STRENGTH 4
 
 static val gravity_timer;
 static val n_bodies;
 static val spawn_chance;
+
+static val bullet_x[MAX_BULLETS];
+static val bullet_y[MAX_BULLETS];
 
 routine(CBodies_update) {
     if (++gravity_timer != 3)
@@ -128,31 +140,37 @@ collision_check:
             if (spawn_edge == 0) {  // Top edge
                 spawn_x = rand8() << 8;
                 spawn_y = 0;
-                spawn_vx = (rand8() & 0x1) ? 0x80 : -0x80;
+                spawn_vx = (rand8() >> 1) * (rand8() % 0x1 ? 1 : -1);
                 spawn_vy = 0x80;  // Move down
             } else if (spawn_edge == 1) {  // Right edge
                 spawn_x = 0xFF00;
                 spawn_y = rand8() << 8;
                 spawn_vx = -0x80;  // Move left
-                spawn_vy = (rand8() & 0x1) ? 0x80 : -0x80;
+                spawn_vy = (rand8() >> 1) * (rand8() % 0x1 ? 1 : -1);
             } else if (spawn_edge == 2) {  // Bottom edge
                 spawn_x = rand8() << 8;
                 spawn_y = 0xF000;
-                spawn_vx = (rand8() & 0x1) ? 0x80 : -0x80;
+                spawn_vx = (rand8() >> 1) * (rand8() % 0x1 ? 1 : -1);
                 spawn_vy = -0x80;  // Move up
             } else {  // Left edge
                 spawn_x = 0;
                 spawn_y = rand8() << 8;
                 spawn_vx = 0x80;  // Move right
-                spawn_vy = (rand8() & 0x1) ? 0x80 : -0x80;
+                spawn_vy = (rand8() >> 1) * (rand8() % 0x1 ? 1 : -1);
             }
             
-            add_body(spawn_x, spawn_y, spawn_vx, spawn_vy, rand8() % CBodyTypeEnd, rand8() % 2);
+            add_body(spawn_x, spawn_y, spawn_vx, spawn_vy, rand8() % CBodyTypeEnd, rand8() < 85, random_attrs());
             spawn_timer = 0;
         }
     }
-    
-    // Check for bullet collision, then apply velocity
+
+    // Cache bullet positions once
+    for(j = 0; j < n_bullets; ++j) {
+        bullet_x[j] = bullets[j].x >> 8;
+        bullet_y[j] = bullets[j].y >> 8;
+    }
+
+    // Check for bullet collision, and apply velocity
     for(i = 0; i < n_bodies; ++i) {
         bodyi_ptr = &bodies[i];
         if (bodyi_ptr->dead) {
@@ -164,16 +182,26 @@ collision_check:
             }
             continue;
         }
+        
         r1.x = bodyi_ptr->x >> 8;
         r1.y = bodyi_ptr->y >> 8;
         r1.width = CBody_width(bodyi_ptr->type);
         r1.height = CBody_height(bodyi_ptr->type);
+        
         for(j = 0; j < n_bullets; ++j) {
-            b_ptr = &bullets[j];
-            r2.x = b_ptr->x >> 8;
-            r2.y = b_ptr->y >> 8;
-            r2.width = 8;
-            r2.height = 8;
+            // // Fast early rejection
+            dx = bullet_x[j] - r1.x;
+            if (dx > r1.width || dx < -8)
+                continue;
+                
+            dy = bullet_y[j] - r1.y;
+            if (dy > r1.height || dy < -8)
+                continue;
+            
+            // Passed quick check, do full collision
+            r2.x = bullet_x[j];
+            r2.y = bullet_y[j];
+            r2.width = r2.height = 8;
             if (check_collision(&r1, &r2)) {
                 bodyi_ptr->dead = true;
                 bodyi_ptr->dead_frame = 0;
@@ -183,10 +211,20 @@ collision_check:
                 break;
             }
         }
-        if (!bodyi_ptr->dead) {
-            bodyi_ptr->x += bodyi_ptr->vx;
-            bodyi_ptr->y += bodyi_ptr->vy;
-        }
+        
+        if (bodyi_ptr->dead)
+            continue;
+
+        // Check if collided with ship
+        r2.x = (ship_x >> 8) + 8;
+        r2.y = (ship_y >> 8) + 8;
+        r2.width = 16;
+        r2.height = 16;
+        kill_ship_flag |= check_collision(&r1, &r2);
+        
+        // Apply velocity to position
+        bodyi_ptr->x += bodyi_ptr->vx;
+        bodyi_ptr->y += bodyi_ptr->vy;
     }
 }
 
@@ -201,7 +239,7 @@ static val nxt;
 render_routine(CBodies) {
     nxt = sprid;
     for(i = 0; i < n_bodies; ++i) {
-        nxt = oam_spr(bodies[i].x >> 8, bodies[i].y >> 8, CBody_sprite(bodies[i]), 1, nxt);
+        nxt = oam_spr(bodies[i].x >> 8, bodies[i].y >> 8, CBody_sprite(bodies[i]), 1 | bodies[i].attrs, nxt);
     }
     return nxt;
 }
@@ -211,7 +249,7 @@ val num_bodies(void) {
 }
 
 static CBody body;
-void add_body(bigval x, bigval y, sbigval vx, sbigval vy, CBodyType type, bool hasGravity) {
+void add_body(bigval x, bigval y, sbigval vx, sbigval vy, CBodyType type, bool hasGravity, val attrs) {
     if (n_bodies >= MAX_BODIES)
         return;
 
@@ -222,6 +260,7 @@ void add_body(bigval x, bigval y, sbigval vx, sbigval vy, CBodyType type, bool h
     body.type = type;
     body.dead = false;
     body.hasGravity = hasGravity;
+    body.attrs = attrs;
     bodies[n_bodies] = body;
 
     ++n_bodies;

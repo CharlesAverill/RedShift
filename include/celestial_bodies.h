@@ -27,12 +27,13 @@ typedef struct CBody {
     bool dead;
     val dead_frame;
     bool hasGravity;
+    val attrs;
 } CBody;
 
 routine(CBodies_init);
 routine(CBodies_update);
 render_routine(CBodies);
 
-void add_body(bigval x, bigval y, sbigval vx, sbigval vy, CBodyType type, bool hasGravity);
+void add_body(bigval x, bigval y, sbigval vx, sbigval vy, CBodyType type, bool hasGravity, val attrs);
 
 #endif

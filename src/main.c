@@ -30,7 +30,7 @@ const val sprite_palettes[] = {
     SHIP_PALETTE,
     GRAYSCALE,
     BULLET_PALETTE,
-    0,0,0,0
+    EXPLOSION_PALETTE
 };
 
 
@@ -107,6 +107,8 @@ void main(void) {
 
         ++frame_counter;
     }
+
+    set_rand(frame_counter);
 
     pal_fade_to(0);
     ppu_mask(0x1e);

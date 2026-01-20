@@ -6,15 +6,18 @@
 bigval ship_x, ship_y;
 sbigval ship_vx, ship_vy;
 val ship_rotation;
+bool kill_ship_flag;
 
 routine(Ship_init) {
-    ship_x = 128 << 8;
-    ship_y = 128 << 8;
+    ship_x = (bigval)128 << 8;
+    ship_y = (bigval)128 << 8;
 
     ship_vx = 0;
     ship_vy = 0;
 
     ship_rotation = 0;
+
+    kill_ship_flag = false;
 }
 
 sbigval f_x, f_y;
@@ -25,6 +28,9 @@ sbigval diff1, diff2;
 sbigval dx, dy;
 bool facing_up, facing_down;
 routine(Ship_update) {
+    if (kill_ship_flag)
+        return;
+
     // Rotation
     if (down(LEFT))
         ship_rotation += 2;
@@ -102,8 +108,16 @@ routine(Ship_update) {
     }
 }
 
+static val sprite;
+static val frame_counter;
 render_routine(Ship) {
-    return oam_meta_spr((ship_x >> 8) + 8, (ship_y >> 8) + 8, sprid, ship_list[((ship_rotation + 16) / 32) & 7]);
+    // sprite = kill_ship_flag ? explosion_list[++frame_counter % 2] : ship_list[((ship_rotation + 16) / 32) & 7];
+    sprite = ship_list[((ship_rotation + 16) / 32) & 7];
+    if (kill_ship_flag)
+        return oam_meta_spr((ship_x >> 8) + 8, (ship_y >> 8) + 8, sprid, explosion_list[++frame_counter % 32 < 16]);
+    else
+        return oam_meta_spr((ship_x >> 8) + 8, (ship_y >> 8) + 8, sprid, ship_list[((ship_rotation + 16) / 32) & 7]);
+    // return oam_meta_spr((ship_x >> 8) + 8, (ship_y >> 8) + 8, sprid, ship_list[((ship_rotation + 16) / 32) & 7]);
 }
 
 const val ship_0_data[]={
@@ -195,4 +209,21 @@ const val* const ship_list[]={
 	ship_6_data,
 	ship_7_data
 
+};
+
+const unsigned char explosion_1[]={
+	  0,  0,0xa2,3,
+	  0,  8,0xa2,3|OAM_FLIP_V,
+	128
+};
+
+const unsigned char explosion_2[]={
+	  0,  0,0xa3,3,
+	  0,  8,0xb3,3,
+	128
+};
+
+const val* const explosion_list[] = {
+    explosion_1,
+    explosion_2
 };
