@@ -9,6 +9,7 @@
 #include "controls.h"
 #include "bg.h"
 #include "objects/bullets.h"
+#include "objects/pickups.h"
 #include "title_screen.h"
 
 const val bg_palette[] = {
@@ -28,8 +29,8 @@ const val title_screen_palette[] = {
 const val sprite_palettes[] = {
     SHIP_PALETTE,
     GRAYSCALE,
-    BULLET_PALETTE,
-    EXPLOSION_PALETTE
+    EXPLOSION_PALETTE, // also bullets
+    0, 0, 0, 0
 };
 
 
@@ -54,7 +55,6 @@ void pal_fade_to(unsigned to)
     else --bright;
     pal_bright(bright);
   }
-//   if (!to) music_stop();
 }
 
 void main(void) {
@@ -133,6 +133,7 @@ void main(void) {
     Ship_init();
     CBodies_init();
     Bullets_init();
+    Pickups_init();
 
     while(true) {
         // Read controller input
@@ -141,6 +142,7 @@ void main(void) {
         Ship_update();
         Bullets_update();
         CBodies_update();
+        Pickups_update();
 
         ppu_wait_nmi();
         // Clear sprites
@@ -150,5 +152,6 @@ void main(void) {
         render(Ship);
         render(Bullets);
         render(CBodies);
+        render(Pickups);
     }
 }

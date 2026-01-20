@@ -6,6 +6,7 @@
 #include "utils.h"
 #include "sound.h"
 #include "objects/ship.h"
+#include "objects/pickups.h"
 
 void delete_body(val n);
 
@@ -172,8 +173,11 @@ collision_check:
     // Check for bullet collision, and apply velocity
     for(i = 0; i < n_bodies; ++i) {
         bodyi_ptr = &bodies[i];
+        bodyi_x = bodyi_ptr->x >> 8;
+        bodyi_y = bodyi_ptr->y >> 8;
         if (bodyi_ptr->dead) {
             if (bodyi_ptr->dead_frame >= 24) {
+                add_pickup(SmallPoints + (rand8() & 0x1), bodyi_x, bodyi_y);
                 delete_body(i);
                 --i;
             } else {
@@ -183,8 +187,8 @@ collision_check:
         }
         
         if (!kill_ship_flag) {
-            r1.x = bodyi_ptr->x >> 8;
-            r1.y = bodyi_ptr->y >> 8;
+            r1.x = bodyi_x;
+            r1.y = bodyi_y;
             r1.width = CBody_width(bodyi_ptr->type);
             r1.height = CBody_height(bodyi_ptr->type);
             
