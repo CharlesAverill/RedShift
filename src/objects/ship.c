@@ -1,12 +1,15 @@
-#include "ship.h"
+#include "objects/ship.h"
 #include "controls.h"
 #include "math.h"
-#include "bullets.h"
+#include "objects/bullets.h"
+#include "sound.h"
 
 bigval ship_x, ship_y;
 sbigval ship_vx, ship_vy;
 val ship_rotation;
 bool kill_ship_flag;
+static val health;
+static val iframe_ctr;
 static val kill_ship_timer;
 static bool ship_dead;
 static bool music_stopped;
@@ -22,6 +25,9 @@ routine(Ship_init) {
 
     kill_ship_flag = ship_dead = music_stopped = false;
     kill_ship_timer = 0;
+
+    health = 4;
+    iframe_ctr = 0;
 }
 
 sbigval f_x, f_y;
@@ -39,6 +45,9 @@ routine(Ship_update) {
         }
         goto apply_velocity;
     }
+
+    if (iframe_ctr)
+        ++iframe_ctr;
 
     // Rotation
     if (down(LEFT))
@@ -118,10 +127,14 @@ apply_velocity:
     ship_y += ship_vy;
 }
 
-static val sprite;
 static val frame_counter;
 render_routine(Ship) {
-    // sprite = kill_ship_flag ? explosion_list[++frame_counter % 2] : ship_list[((ship_rotation + 16) / 32) & 7];
+    // Flicker when invulnerable
+    if (iframe_ctr && iframe_ctr % 2)
+        return sprid;
+
+    // There's some weirdness here if I try to assign to a `sprite` value that's
+    // then passed to a single oam_meta_spr call
     if (kill_ship_flag && (ship_dead || kill_ship_timer > 240)) {
         if (!ship_dead && kill_ship_timer > 240) {
             ship_dead = true;
@@ -137,7 +150,24 @@ render_routine(Ship) {
         return oam_meta_spr((ship_x >> 8) + 8, (ship_y >> 8) + 8, sprid, explosion_list[++frame_counter % 32 < 16]);
     } else
         return oam_meta_spr((ship_x >> 8) + 8, (ship_y >> 8) + 8, sprid, ship_list[((ship_rotation + 16) / 32) & 7]);
-    // return oam_meta_spr((ship_x >> 8) + 8, (ship_y >> 8) + 8, sprid, ship_list[((ship_rotation + 16) / 32) & 7]);
+}
+
+routine(ship_damage) {
+    if (iframe_ctr) {
+        if (iframe_ctr >= 60)
+            iframe_ctr = 0;
+
+        return;
+    }
+
+    if (health == 0) {
+        kill_ship_flag = true;
+        music_stop();
+        sfx_play(SFX_GAME_OVER, SFX_CHANNEL);
+    } else {
+        --health;
+        iframe_ctr = 1;
+    }
 }
 
 const val ship_0_data[]={
@@ -246,4 +276,35 @@ const unsigned char explosion_2[]={
 const val* const explosion_list[] = {
     explosion_1,
     explosion_2
+};
+
+const unsigned char shield_up[]={
+	  0,  0,0xa5,0,
+	  8,  0,0xa5,0|OAM_FLIP_H,
+	128
+};
+
+const unsigned char shield_down[]={
+	  0,  0,0xa5,0|OAM_FLIP_V,
+	  8,  0,0xa5,0|OAM_FLIP_H|OAM_FLIP_V,
+	128
+};
+
+const unsigned char shield_left[]={
+	  0,  0,0xb5,0|OAM_FLIP_V,
+	  0,  8,0xb5,0,
+	128
+};
+
+const unsigned char shield_right[]={
+	  0,  0,0xb5,0|OAM_FLIP_H|OAM_FLIP_V,
+	  0,  8,0xb5,0|OAM_FLIP_H,
+	128
+};
+
+const val* const shield_list[] = {
+    shield_up,
+    shield_down,
+    shield_left,
+    shield_right
 };

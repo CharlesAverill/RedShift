@@ -1,5 +1,5 @@
 #include "types.h"
-#include "bullets.h"
+#include "objects/bullets.h"
 #include "neslib.h"
 #include "sound.h"
 

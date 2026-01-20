@@ -25,7 +25,9 @@ AS=ca65
 LD=ld65
 CL=cl65
 
-C_FILES := $(wildcard $(SRC)/*.c)
+rwildcard=$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst *,%,$2),$d))
+
+C_FILES := $(call rwildcard,$(SRC),%.c)
 S_FILES := $(filter-out $(SRC)/crt0.S,$(wildcard $(SRC)/*.S))
 O_FILES := $(patsubst $(SRC)/%.c,$(BUILD)/%.o,$(C_FILES))
 
@@ -37,7 +39,7 @@ SFX := $(BUILD)/sfx.S
 INCLUDE_DIRS := $(INC) $(LIB)/neslib $(LIB)/famitone
 INCLUDE := $(foreach dir, $(INCLUDE_DIRS), -I$(dir))
 
-CFLAGS := $(INCLUDE) -Oirs --add-source -W -pointer-sign --standard cc65 -g
+CFLAGS := $(INCLUDE) -Oirs --add-source -W +error --standard cc65 -g
 ASFLAGS := -g $(INCLUDE)
 LDFLAGS := -C $(CFG) $(BUILD)/crt0.o $(O_FILES) nes.lib \
 		   -Ln $(BUILD)/labels.txt --dbgfile $(BUILD)/dbg.txt
@@ -54,7 +56,7 @@ $(BUILD)/%.o: $(BUILD)/%.S
 	$(AS) $(ASFLAGS) $< -o $@
 
 $(BUILD)/%.S: $(SRC)/%.c
-	mkdir -p $(BUILD)
+	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $< -o $@
 
 $(BGM): $(ASSETS)/music/bgm.txt

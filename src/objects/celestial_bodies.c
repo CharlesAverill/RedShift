@@ -1,11 +1,11 @@
 #include "types.h"
-#include "celestial_bodies.h"
+#include "objects/celestial_bodies.h"
 #include "neslib.h"
 #include "math.h"
-#include "bullets.h"
+#include "objects/bullets.h"
 #include "utils.h"
 #include "sound.h"
-#include "ship.h"
+#include "objects/ship.h"
 
 void delete_body(val n);
 
@@ -45,7 +45,6 @@ routine(CBodies_init) {
 
 static sbigval dx, dy;
 static CBody *bodyi_ptr, *bodyj_ptr;
-static Bullet *b_ptr;
 static val typei, typej;
 static Rect r1, r2;
 static sbigval bodyi_x, bodyi_y, bodyj_x, bodyj_y;
@@ -190,14 +189,14 @@ collision_check:
             r1.height = CBody_height(bodyi_ptr->type);
             
             for(j = 0; j < n_bullets; ++j) {
-                // // Fast early rejection
-                dx = bullet_x[j] - r1.x;
-                if (dx > r1.width || dx < -8)
-                    continue;
+                // Fast early rejection
+                // dx = bullet_x[j] - r1.x;
+                // if (dx > r1.width || dx < -8)
+                //     continue;
                     
-                dy = bullet_y[j] - r1.y;
-                if (dy > r1.height || dy < -8)
-                    continue;
+                // dy = bullet_y[j] - r1.y;
+                // if (dy > r1.height || dy < -8)
+                //     continue;
                 
                 // Passed quick check, do full collision
                 r2.x = bullet_x[j];
@@ -223,9 +222,7 @@ collision_check:
             r2.width = 16;
             r2.height = 16;
             if (check_collision(&r1, &r2)) {
-                kill_ship_flag = true;
-                music_stop();
-                sfx_play(SFX_GAME_OVER, SFX_CHANNEL);
+                ship_damage();
 
                 // Destroy asteroid too
                 bodyi_ptr->dead = true;

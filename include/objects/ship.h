@@ -1,5 +1,5 @@
-#ifndef SHIP_H
-#define SHIP_H
+#ifndef SHIP
+#define SHIP
 
 #include "neslib.h"
 #include "palette.h"
@@ -7,6 +7,7 @@
 
 extern const val* const ship_list[];
 extern const val* const explosion_list[];
+const val* const shield_list[];
 
 #define SHIP_SPRID 0
 #define SHIP_UP ship_list[0]
@@ -39,5 +40,6 @@ extern bool kill_ship_flag;
 routine(Ship_init);
 routine(Ship_update);
 render_routine(Ship);
+routine(ship_damage);
 
-#endif
+#endif /* SHIP */

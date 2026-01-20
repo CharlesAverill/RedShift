@@ -193,9 +193,9 @@ clearRAM:
 	jsr	copydata
 
     lda #<(__STACK_START__+__STACKSIZE__) ;changed
-    sta	c_sp
+    sta	sp
     lda	#>(__STACK_START__+__STACKSIZE__)
-    sta	c_sp+1            ; Set argument stack ptr
+    sta	sp+1            ; Set argument stack ptr
 
 ;	jsr	initlib
 ; removed. this called the CONDES function

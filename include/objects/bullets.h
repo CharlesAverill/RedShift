@@ -1,5 +1,5 @@
-#ifndef BULLETS_H
-#define BULLETS_H
+#ifndef BULLETS
+#define BULLETS
 
 #include "types.h"
 
@@ -39,4 +39,4 @@ render_routine(Bullets);
  */
 void add_bullet(sbigval x, sbigval y, sbigval vx, sbigval vy, facing f);
 
-#endif
+#endif /* BULLETS */

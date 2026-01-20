@@ -2,14 +2,13 @@
 #include "palette.h"
 #include "types.h"
 #include "geometry.h"
-#include "params.h"
 #include "string.h"
-#include "ship.h"
-#include "celestial_bodies.h"
+#include "objects/ship.h"
+#include "objects/celestial_bodies.h"
 #include "math.h"
 #include "controls.h"
 #include "bg.h"
-#include "bullets.h"
+#include "objects/bullets.h"
 #include "title_screen.h"
 
 const val bg_palette[] = {
