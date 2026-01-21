@@ -35,5 +35,8 @@ routine(CBodies_update);
 render_routine(CBodies);
 
 void add_body(bigval x, bigval y, sbigval vx, sbigval vy, CBodyType type, bool hasGravity, val attrs);
+routine(destroy_all_bodies);
+
+extern bool do_collision_checks;
 
 #endif

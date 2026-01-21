@@ -1,0 +1,42 @@
+﻿;Setting Format
+; Extension=LoadType(LoadAddress,LoadSize,DestinationAddress)
+;
+;     Extension
+;        Extension of opened file
+;        '?' : Wildcard 1 charactor
+;        '*' : Wildcard multi charactors
+;     LoadType
+;         PAL           :RGB 24bit palette. load to [Pal+Set] palette
+;         PAL32         :RGB 32bit palette as PAL file sized 0400. load to [Pal256] palette
+;         PAL24         :RGB 24bit palette as PAL file sized 0300. load to [Pal256] palette
+;         PAL16         :RGB 16bit palette as PAL file sized 0200. load to [Pal256] palette
+;         PAL15         :RGB 15bit palette. load to [Pal256] palette (=PAL16)
+;         PAL9          :RGB 9bit palette. load to [Pal256] palette
+;         DAT           :Palette set as DAT file
+;         PTBL          :Palette set (=DAT)
+;         ADF           :Pattern data for bank replace order 
+;     LoadAddress
+;        Hexadecimal data address in opened file
+;        'custom' : calc address by yy-chr
+;     LoadSize
+;        Hexadecimal data size in opened file
+;           PAL(x64)    :00C0 (3byte * 64)
+;           PAL(x256)   :0300 (3byte * 256)
+;           PAL(SNES)   :0200 (2byte * 256)
+;		    DAT(NES)    :0020 (4palette * 8set)
+;           ADF         :0100 (16 * 16 bank size)
+;     DestinationAddress
+;        Hexadecimal destination data address
+;        0 in most cases.
+;        ADF            :0020. ADF constructed 32byte text and 256byte pattern. 
+;
+
+; ZSNES
+zs?=PAL16(00000618,00000200,00000000)
+
+; SNES-GT
+; sv?=PAL16(custom,00000200,00000000)
+
+; VirtuaNES
+; st?=DAT(custom,custom,00000020)
+

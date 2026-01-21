@@ -1,6 +1,10 @@
 #ifndef PALETTE_H
 #define PALETTE_H
 
+#define DEFAULT_MASK 0x1e
+#define RED_MASK (1 << 5)
+#define GREEN_MASK (1 << 6)
+
 #define BLACK       0x0F  // universal background
 #define DARK_BLUE 0x01
 #define BLUE      0x02
@@ -62,5 +66,17 @@
 #define LIGHT_CYAN   0x3C
 
 #define GRAYSCALE BLACK, DARK_GRAY, LIGHT_GRAY, WHITE
+
+typedef enum ScreenBrightness {
+    Black,
+    DarkPlus,
+    Dark,
+    DarkMinus,
+    Normal,
+    BrightMinus,
+    Bright,
+    BrightPlus,
+    White
+} ScreenBrightness;
 
 #endif

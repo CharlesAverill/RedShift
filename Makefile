@@ -39,7 +39,7 @@ SFX := $(BUILD)/sfx.S
 INCLUDE_DIRS := $(INC) $(LIB)/neslib $(LIB)/famitone
 INCLUDE := $(foreach dir, $(INCLUDE_DIRS), -I$(dir))
 
-CFLAGS := $(INCLUDE) -Oirs --add-source -W +error --standard cc65 -g
+CFLAGS := $(INCLUDE) -Oirs --add-source -W +error -W -pointer-sign --standard cc65 -g
 ASFLAGS := -g $(INCLUDE)
 LDFLAGS := -C $(CFG) $(BUILD)/crt0.o $(O_FILES) nes.lib \
 		   -Ln $(BUILD)/labels.txt --dbgfile $(BUILD)/dbg.txt
@@ -68,7 +68,7 @@ $(SFX): $(ASSETS)/sfx/sfx.nsf
 	mv $(ASSETS)/sfx/sfx.s $@
 
 yychr:
-	$(WINE) $(YYCHR)/YYCHR.exe
+	cd $(YYCHR) && $(WINE) YYCHR.exe
 
 famitracker:
 	$(WINE) $(TOOLS)/FamiTracker.exe

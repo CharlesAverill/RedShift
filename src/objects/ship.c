@@ -3,6 +3,7 @@
 #include "math.h"
 #include "objects/bullets.h"
 #include "sound.h"
+#include "events.h"
 
 bigval ship_x, ship_y;
 sbigval ship_vx, ship_vy;
@@ -164,8 +165,7 @@ render_routine(Ship) {
             ppu_mask(0x1e | (1 << 5)); // red emphasis
         } else if (music_stopped && kill_ship_timer > 120) {
             music_stopped = false;
-            music_play(1);
-            pal_bright(3);
+            trigger_game_over();
         }
 
         return oam_meta_spr((ship_x >> 8) + 8, (ship_y >> 8) + 8, nxt, explosion_list[++frame_counter % 32 < 16]);
@@ -188,6 +188,7 @@ routine(ship_damage) {
     } else {
         --health;
         iframe_ctr = 1;
+        sfx_play(SFX_EXPLOSION, SFX_CHANNEL);
     }
 }
 
@@ -283,14 +284,14 @@ const val* const ship_list[]={
 };
 
 const unsigned char explosion_1[]={
-	  0,  0,0xa2,3,
-	  0,  8,0xa2,3|OAM_FLIP_V,
+	  0,  0,0xa2,2,
+	  0,  8,0xa2,2|OAM_FLIP_V,
 	128
 };
 
 const unsigned char explosion_2[]={
-	  0,  0,0xa3,3,
-	  0,  8,0xb3,3,
+	  0,  0,0xa3,2,
+	  0,  8,0xb3,2,
 	128
 };
 

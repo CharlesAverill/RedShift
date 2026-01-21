@@ -1,4 +1,5 @@
 #include "neslib.h"
+#include "nesdoug.h"
 #include "palette.h"
 #include "types.h"
 #include "geometry.h"
@@ -7,32 +8,10 @@
 #include "objects/celestial_bodies.h"
 #include "math.h"
 #include "controls.h"
-#include "bg.h"
+#include "screens/screens.h"
 #include "objects/bullets.h"
 #include "objects/pickups.h"
-#include "title_screen.h"
-
-const val bg_palette[] = {
-    0x0f, 0x05, 0x03, 0x3C,
-    0,0,0,0,
-    0,0,0,0,
-    0,0,0,0
-};
-
-const val title_screen_palette[] = {
-    0x0f, 0x05, 0x10, 0x30,
-    0,0,0,0,
-    0,0,0,0,
-    0,0,0,0
-};
-
-const val sprite_palettes[] = {
-    SHIP_PALETTE,
-    GRAYSCALE,
-    EXPLOSION_PALETTE, // also bullets
-    0, 0, 0, 0
-};
-
+#include "events.h"
 
 #pragma bss-name(push, "ZEROPAGE")
 const unsigned char bus_conflict_fix[4]={0,1,2,3};
@@ -41,11 +20,11 @@ const unsigned char bus_conflict_fix[4]={0,1,2,3};
 val btn_down, btn_new;
 val sprid;
 
-val frame_counter = 1;
-val brightness = 1;
-bool darkening = true;
+val frame_counter;
+val brightness;
+bool darkening;
 
-void pal_fade_to(unsigned to)
+static void pal_fade_to(unsigned to)
 {
   val bright = 3 + brightness;
   while(bright!=to)
@@ -58,28 +37,30 @@ void pal_fade_to(unsigned to)
 }
 
 void main(void) {
+main_top: // Jump here if a game over occurs
+    game_over_flag = false;
+    brightness = 1;
+    frame_counter = 1;
+    darkening = true;
+
     // Turn off the screen
     ppu_off();
 
     POKE(bus_conflict_fix + 1, 1);
 
     // Set up title screen
-    ppu_mask(0x1e | (1 << 5)); // red emphasis
-    pal_bg(title_screen_palette);
-    vram_adr(NAMETABLE_A);
-    vram_unrle(title_screen);
-
-    // Play bgm
-    music_play(0);
+    set_screen(TitleScreen);
 
     ppu_on_all();
+
+    reset_inputs();
 
     while(!triggered(START)) {
         ppu_wait_nmi();
 
         read_inputs();
 
-        if (frame_counter % 64 == 0) {
+        if (++frame_counter % 64 == 0) {
             if (brightness == 2)
                 darkening = true;
             else if (brightness == 0)
@@ -92,38 +73,29 @@ void main(void) {
 
             switch(brightness) {
                 case 0:
-                    ppu_mask(0x1e | (1 << 6));
+                    ppu_mask(DEFAULT_MASK | GREEN_MASK);
                     break;
                 case 1:
-                    ppu_mask(0x1e | (1 << 5));
+                    ppu_mask(DEFAULT_MASK | RED_MASK);
                     break;
                 case 2:
-                    ppu_mask(0x1e);
+                    ppu_mask(DEFAULT_MASK);
                     break;
             }
             // POKE(bus_conflict_fix + 0, 0);
         }
-
-        ++frame_counter;
     }
 
-    set_rand(frame_counter);
+    seed_rng();
 
     pal_fade_to(0);
-    ppu_mask(0x1e);
+    ppu_mask(DEFAULT_MASK);
     ppu_off();
 
     POKE(bus_conflict_fix + 0, 0);
 
     // Draw background
-    bank_bg(1);
-    pal_bg(bg_palette);
-    vram_adr(NAMETABLE_A);
-    vram_unrle(bg);
-
-    // Prepare to draw sprites
-    bank_spr(0);
-    pal_spr(sprite_palettes);
+    set_screen(MainPlayScreen);
 
     pal_bright(0);
     ppu_on_all();
@@ -135,7 +107,8 @@ void main(void) {
     Bullets_init();
     Pickups_init();
 
-    while(true) {
+    // Main game loop
+    while(!game_over_flag) {
         // Read controller input
         read_inputs();
 
@@ -154,4 +127,34 @@ void main(void) {
         render(CBodies);
         render(Pickups);
     }
+
+    destroy_all_pickups();
+
+    // Game over screen
+    set_screen(GameOverScreen);
+
+    while(true) {
+        // Break on start button press
+        read_inputs();
+        if (triggered(START))
+            break;
+
+        CBodies_update();
+
+        ppu_wait_nmi();
+        sprid = 0;
+        oam_clear();
+
+        render(CBodies);
+    }
+
+    // Fade and clear the screen
+    brightness = 1;
+    pal_fade_to(0);
+
+    destroy_all_bodies();
+    sprid = 0;
+    oam_clear();
+
+    goto main_top;
 }

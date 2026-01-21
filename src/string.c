@@ -2,7 +2,7 @@
 #include "string.h"
 
 val strlen(val* s) {
-    static val len;
+    val len = 0;
     while(*s) {
         ++s;
         ++len;
@@ -24,8 +24,16 @@ void strcat(val* dst, val* src) {
 }
 
 void strncpy(val* dst, val* src, val n) {
-    static val i;
+    val i;
     for(i = 0; i < n; ++i) {
+        *dst = *src;
+        ++dst;
+        ++src;
+    }
+}
+
+void strcpy(val* dst, val* src) {
+    while(*src) {
         *dst = *src;
         ++dst;
         ++src;
@@ -45,7 +53,7 @@ val* itoa(val n, val* str) {
 }
 
 void memset(val *ptr, val v, val n) {
-    static val i;
+    val i;
     for(i = 0; i < n; ++i) {
         ptr[i] = v;
     }

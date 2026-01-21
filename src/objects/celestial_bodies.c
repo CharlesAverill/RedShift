@@ -7,6 +7,7 @@
 #include "sound.h"
 #include "objects/ship.h"
 #include "objects/pickups.h"
+#include "events.h"
 
 void delete_body(val n);
 
@@ -121,7 +122,7 @@ routine(CBodies_update) {
 collision_check:    
     // Spawn new asteroids based on current count
     // Fewer asteroids = higher spawn chance
-    if (++spawn_timer > 100 && n_bodies < MAX_BODIES && n_bodies < MAX_ASTEROIDS) {
+    if (++spawn_timer > 100 && n_bodies < MAX_BODIES && n_bodies < MAX_ASTEROIDS && !game_over_flag) {
         // Calculate spawn chance: more aggressive when fewer asteroids
         // spawn_chance ranges from 255 (when few asteroids) to ~32 (when many)
         if (n_bodies < MIN_ASTEROIDS) {
@@ -279,4 +280,8 @@ void add_body(bigval x, bigval y, sbigval vx, sbigval vy, CBodyType type, bool h
     bodies[n_bodies] = body;
 
     ++n_bodies;
+}
+
+routine(destroy_all_bodies) {
+    n_bodies = 0;
 }

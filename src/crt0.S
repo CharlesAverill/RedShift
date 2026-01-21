@@ -253,8 +253,8 @@ detectNTSC:
 	jmp _main			;no parameters
 
 	.include "../lib/neslib/neslib.sinc"
+	.include "nesdoug.S"
 	.include "../lib/famitone/famitone5.s"
-	.include "utils.S"
 	
 	
 .segment "RODATA"

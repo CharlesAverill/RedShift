@@ -67,3 +67,7 @@ void add_pickup(PickupType type, val x, val y) {
     pickups[n_pickups] = *p;
     ++n_pickups;
 }
+
+routine(destroy_all_pickups) {
+    n_pickups = 0;
+}

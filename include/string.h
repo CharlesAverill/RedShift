@@ -29,6 +29,14 @@ void strcat(val* dst, val* src);
 void strncpy(val* dst, val* src, val n);
 
 /**
+ * @brief Copy a string into another, up to the null terminator
+ * 
+ * @param dst String to copy into
+ * @param src String to copy from
+ */
+void strcpy(val* dst, val* src);
+
+/**
  * @brief Convert an integer value to a null-terminated string containing its base-10 representation in ASCII
  * 
  * @param n The value to parse

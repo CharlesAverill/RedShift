@@ -27,6 +27,8 @@ routine(Pickups_init);
 routine(Pickups_update);
 render_routine(Pickups);
 
+routine(destroy_all_pickups);
+
 void add_pickup(PickupType type, val x, val y);
 
 #endif /* PICKUPS */
