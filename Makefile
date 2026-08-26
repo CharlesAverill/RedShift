@@ -3,6 +3,7 @@
 MAKEFLAGS += -r
 
 NAME := RedShift
+build: $(NAME).nes $(CC) $(AS) $(LD) $(CL)
 
 # Paths
 TOOLS := tools
@@ -20,10 +21,10 @@ MESEN := mesen
 FCEUX := fceux
 NESST := $(TOOLS)/NESst
 
-CC=cc65
-AS=ca65
-LD=ld65
-CL=cl65
+CC=$(TOOLS)/cc65/bin/cc65
+AS=$(TOOLS)/cc65/bin/ca65
+LD=$(TOOLS)/cc65/bin/ld65
+CL=$(TOOLS)/cc65/bin/cl65
 
 rwildcard=$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst *,%,$2),$d))
 
@@ -44,20 +45,19 @@ ASFLAGS := -g $(INCLUDE)
 LDFLAGS := -C $(CFG) $(BUILD)/crt0.o $(O_FILES) nes.lib \
 		   -Ln $(BUILD)/labels.txt --dbgfile $(BUILD)/dbg.txt
 
-build: $(NAME).nes
 $(NAME).nes: $(O_FILES) $(BUILD)/crt0.o $(CFG) $(ASSET_FILES)
 	$(LD) $(LDFLAGS) --dbgfile $(NAME).dbg -o $(NAME).nes
 
-$(BUILD)/crt0.o: $(wildcard $(LIB)/neslib/*.s $(LIB)/neslib/*.sinc) $(BGM) $(SFX) $(ASSET_FILES)
+$(BUILD)/crt0.o: $(CL) $(wildcard $(LIB)/neslib/*.s $(LIB)/neslib/*.sinc) $(BGM) $(SFX) $(ASSET_FILES)
 	$(CL) -t nes -Oisr -c $(SRC)/crt0.S
 	@mv $(SRC)/crt0.o $(BUILD)
 
-$(BUILD)/%.o: $(BUILD)/%.S
-	$(AS) $(ASFLAGS) $< -o $@
-
-$(BUILD)/%.S: $(SRC)/%.c
+$(BUILD)/%.S: $(SRC)/%.c $(CC)
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $< -o $@
+
+$(BUILD)/%.o: $(BUILD)/%.S $(AS)
+	$(AS) $(ASFLAGS) $< -o $@
 
 $(BGM): $(ASSETS)/music/bgm.txt
 	$(WINE) $(LIB)/famitone/text2data/text2vol5_2025.exe $< -ca65
@@ -87,5 +87,9 @@ nesifier:
 
 clean:
 	rm -rf build
+
+cc65: $(CC) $(AS) $(LD) $(CL)
+$(CC) $(AS) $(LD) $(CL):
+	cd $(TOOLS)/cc65 && make -j
 
 all: build mesen

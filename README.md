@@ -21,12 +21,11 @@ Eventually I'll host an in-browser version.
 ## Building
 
 Install dependencies:
-- The [cc65 toolchain](https://cc65.github.io/)
 - [wine](https://www.winehq.org/)
 - A suitable emulator (I prefer [mesen](https://www.mesen.ca/) for playing but [fceux](https://fceux.com/web/home.html) is also very good)
 
 ```bash
-git clone https://github.com/CharlesAverill/RedShift.git
+git clone https://github.com/CharlesAverill/RedShift.git --recurse-submodules
 cd RedShift
 make
 ```
