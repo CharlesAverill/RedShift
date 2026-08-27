@@ -2,3 +2,5 @@
 build
 .vscode
 *.dbg
+*.aux
+*.log

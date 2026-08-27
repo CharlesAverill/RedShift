@@ -3,11 +3,13 @@
 ![title screen](./screenshots/title_screen.png)
 
 This is a tiny, in-progress [Asteroids](https://en.wikipedia.org/wiki/Asteroids_(video_game)) clone for the [NES](https://en.wikipedia.org/wiki/Nintendo_Entertainment_System).
-It's written using [neslib](https://github.com/clbr/neslib) and [famitone5](https://github.com/nesdoug/famitone5.0), and I utilized a bunch of different [tools](./tools) for formatting the graphics and audio in the correct way.
+It's written using [neslib](https://github.com/clbr/neslib) and [famitone5](https://github.com/nesdoug/famitone5.0), and I utilized a bunch of different [tools](./tools) for formatting the graphics and audio.
 The build process makes heavy use of [cc65](https://cc65.github.io/).
 
 The latest release can always be downloaded [here](https://github.com/CharlesAverill/RedShift/raw/refs/heads/main/RedShift.nes).
 Eventually I'll host an in-browser version.
+
+Read the [manual!](manual/manual.pdf)
 
 ## Controls
 

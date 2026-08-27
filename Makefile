@@ -1,4 +1,4 @@
-.PHONY: all clean build yychr famitracker mesen fceux nesst
+.PHONY: all clean build yychr famitracker mesen fceux nesst manual
 .SUFFIXES:
 MAKEFLAGS += -r
 
@@ -47,6 +47,11 @@ LDFLAGS := -C $(CFG) $(BUILD)/crt0.o $(O_FILES) nes.lib \
 
 $(NAME).nes: $(O_FILES) $(BUILD)/crt0.o $(CFG) $(ASSET_FILES)
 	$(LD) $(LDFLAGS) --dbgfile $(NAME).dbg -o $(NAME).nes
+
+manual: manual/manual.pdf
+manual/manual.pdf: manual/manual.tex
+	pdflatex -output-directory=manual manual/manual.tex
+	pdflatex -output-directory=manual manual/manual.tex
 
 $(BUILD)/crt0.o: $(CL) $(wildcard $(LIB)/neslib/*.s $(LIB)/neslib/*.sinc) $(BGM) $(SFX) $(ASSET_FILES)
 	$(CL) -t nes -Oisr -c $(SRC)/crt0.S
