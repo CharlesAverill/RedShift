@@ -32,6 +32,7 @@ void __fastcall__ add_score(val delta) {
     while (score.mantissa >= 1000 && score.tier < MAX_TIER) {
         score.mantissa -= 1000;
         ++score.tier;
+        score_mult >>= 4;
     }
     if (score.tier == MAX_TIER && score.mantissa > 999)
         score.mantissa = 999;

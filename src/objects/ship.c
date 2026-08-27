@@ -3,7 +3,7 @@
 #include "math.h"
 #include "objects/bullets.h"
 #include "sound.h"
-#include "events.h"
+#include "events.h" 
 #include "score.h"
 
 bigval ship_x, ship_y;
@@ -15,6 +15,8 @@ static val iframe_ctr;
 static val kill_ship_timer;
 static bool ship_dead;
 static bool music_stopped;
+
+#define SHIP_MAX_HEALTH 4
 
 routine(Ship_init) {
     ship_x = (bigval)128 << 8;
@@ -28,7 +30,7 @@ routine(Ship_init) {
     kill_ship_flag = ship_dead = music_stopped = false;
     kill_ship_timer = 0;
 
-    health = 4;
+    health = SHIP_MAX_HEALTH;
     iframe_ctr = 1;
 }
 
@@ -192,6 +194,15 @@ routine(ship_damage) {
         iframe_ctr = 1;
         sfx_play(SFX_EXPLOSION, SFX_CHANNEL);
     }
+}
+
+routine(ship_regen_shield) {
+    if (health < SHIP_MAX_HEALTH)
+        ++health;
+}
+
+bool __fastcall__ ship_below_full_health(void) {
+    return health < SHIP_MAX_HEALTH;
 }
 
 const val ship_0_data[]={

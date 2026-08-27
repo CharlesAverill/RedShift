@@ -2,12 +2,13 @@
 #include "objects/pickups.h"
 #include "objects/ship.h"
 #include "score.h"
-#include "sound.h"
 #include "utils.h"
+#include "sound.h"
 
 #define MAX_PICKUPS 4
 #define PICKUP_W    8
 #define PICKUP_H    8
+#define PICKUP_LIFETIME 255
 
 static val n_pickups;
 static Pickup pickups[MAX_PICKUPS];
@@ -63,7 +64,8 @@ routine(Pickups_update) {
                     sfx_play(SFX_LARGE_PICKUP, SFX_CHANNEL);
                     break;
                 case Shield:
-                    // TODO : regen shield
+                    ship_regen_shield();
+                    sfx_play(SFX_LARGE_PICKUP, SFX_CHANNEL);
                     break;
             }
             delete_pickup(i);
@@ -78,7 +80,7 @@ val sprite_of_Pickup(Pickup *p) {
         case LargePoints:
             return pickup_timer % 16 < 8 ? LARGE_POINTS_SPRITE_1 : LARGE_POINTS_SPRITE_2;
         case Shield:
-            return '!';
+            return SHIELD_SPRITE;
     }
 }
 
@@ -99,11 +101,11 @@ void add_pickup(PickupType type, val x, val y) {
     p->type = type;
     p->x = x;
     p->y = y;
-    p->lifetime = 255;
+    p->lifetime = (type == Shield) ? (PICKUP_LIFETIME * 3) : PICKUP_LIFETIME;
     pickups[n_pickups] = *p;
     ++n_pickups;
 }
 
 routine(destroy_all_pickups) {
     n_pickups = 0;
-}
+} 

@@ -5,9 +5,10 @@
 
 #define _PICKUP_ROW1 0xa0
 #define _PICKUP_ROW2 0xb0
-#define SMALL_POINTS_SPRITE _PICKUP_ROW1 + 6
+#define SMALL_POINTS_SPRITE   _PICKUP_ROW1 + 6
 #define LARGE_POINTS_SPRITE_1 _PICKUP_ROW2 + 2
 #define LARGE_POINTS_SPRITE_2 _PICKUP_ROW2 + 4
+#define SHIELD_SPRITE         _PICKUP_ROW2 + 6
 #define PICKUPS_PALETTE 2
 
 typedef enum PickupType {
@@ -20,7 +21,7 @@ typedef enum PickupType {
 typedef struct Pickup {
     PickupType type;
     val x, y;
-    val lifetime;
+    bigval lifetime;
 } Pickup;
 
 routine(Pickups_init);

@@ -45,5 +45,7 @@ routine(Ship_init);
 routine(Ship_update);
 render_routine(Ship);
 routine(ship_damage);
+routine(ship_regen_shield);
+bool __fastcall__ ship_below_full_health(void);
 
 #endif /* SHIP */

@@ -178,15 +178,17 @@ collision_check:
         bodyi_y = bodyi_ptr->y >> 8;
         if (bodyi_ptr->dead) {
             if (bodyi_ptr->dead_frame >= 24) {
-                // Small: 50% chance, offset left
-                if (rand8() < 128)
-                    add_pickup(SmallPoints, bodyi_x - 4, bodyi_y);
-                // Large: 10% chance, offset right
-                if (rand8() < 26)
-                    add_pickup(LargePoints, bodyi_x + 4, bodyi_y);
+                if (bodyi_ptr->drop_pickup) {
+                    if (rand8() < 128) // 50%
+                        add_pickup(SmallPoints, bodyi_x - 4, bodyi_y);
+                    if (rand8() < 54) // 25%
+                        add_pickup(LargePoints, bodyi_x + 4, bodyi_y);
+                    if (ship_below_full_health() && rand8() < 54) // 25% when hurt
+                        add_pickup(Shield, bodyi_x, bodyi_y);
+                }
                 delete_body(i);
                 --i;
-            } else {
+            } else { 
                 ++bodyi_ptr->dead_frame;
             }
             continue;
@@ -214,6 +216,7 @@ collision_check:
                 r2.width = r2.height = 8;
                 if (check_collision(&r1, &r2)) {
                     bodyi_ptr->dead = true;
+                    bodyi_ptr->drop_pickup = true;
                     bodyi_ptr->dead_frame = 0;
                     bodyi_ptr->vx = 0;
                     bodyi_ptr->vy = 0;
@@ -236,6 +239,7 @@ collision_check:
 
                 // Destroy asteroid too
                 bodyi_ptr->dead = true;
+                bodyi_ptr->drop_pickup = false;
                 bodyi_ptr->dead_frame = 0;
                 bodyi_ptr->vx = 0;
                 bodyi_ptr->vy = 0;

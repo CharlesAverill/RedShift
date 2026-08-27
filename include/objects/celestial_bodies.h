@@ -27,6 +27,7 @@ typedef struct CBody {
     bool dead;
     val dead_frame;
     bool hasGravity;
+    bool drop_pickup;
     val attrs;
 } CBody;
 
