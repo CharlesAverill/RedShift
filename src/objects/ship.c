@@ -4,6 +4,7 @@
 #include "objects/bullets.h"
 #include "sound.h"
 #include "events.h"
+#include "score.h"
 
 bigval ship_x, ship_y;
 sbigval ship_vx, ship_vy;
@@ -186,6 +187,7 @@ routine(ship_damage) {
         music_stop();
         sfx_play(SFX_GAME_OVER, SFX_CHANNEL);
     } else {
+        reset_score_multiplier();
         --health;
         iframe_ctr = 1;
         sfx_play(SFX_EXPLOSION, SFX_CHANNEL);

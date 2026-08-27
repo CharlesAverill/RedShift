@@ -12,6 +12,7 @@
 #include "objects/bullets.h"
 #include "objects/pickups.h"
 #include "events.h"
+#include "score.h"
 
 #pragma bss-name(push, "ZEROPAGE")
 const unsigned char bus_conflict_fix[4]={0,1,2,3};
@@ -97,6 +98,8 @@ main_top: // Jump here if a game over occurs
     // Draw background
     set_screen(MainPlayScreen);
 
+    reset_score();
+
     pal_bright(0);
     ppu_on_all();
     brightness = -2;
@@ -118,6 +121,7 @@ main_top: // Jump here if a game over occurs
         Pickups_update();
 
         ppu_wait_nmi();
+        clear_vram_buffer();
         // Clear sprites
         sprid = 0;
         oam_clear();
@@ -126,6 +130,7 @@ main_top: // Jump here if a game over occurs
         render(Bullets);
         render(CBodies);
         render(Pickups);
+        render(Score);
     }
 
     destroy_all_pickups();
@@ -142,10 +147,12 @@ main_top: // Jump here if a game over occurs
         CBodies_update();
 
         ppu_wait_nmi();
+        clear_vram_buffer();
         sprid = 0;
         oam_clear();
 
         render(CBodies);
+        render(Score);
     }
 
     // Fade and clear the screen

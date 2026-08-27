@@ -7,6 +7,8 @@
 #define SFX_EXPLOSION 0
 #define SFX_BLASTER 1
 #define SFX_GAME_OVER 2
+#define SFX_SMALL_PICKUP 3
+#define SFX_LARGE_PICKUP 4
 
 #define SFX_CHANNEL 0
 

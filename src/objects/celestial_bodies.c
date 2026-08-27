@@ -178,7 +178,12 @@ collision_check:
         bodyi_y = bodyi_ptr->y >> 8;
         if (bodyi_ptr->dead) {
             if (bodyi_ptr->dead_frame >= 24) {
-                add_pickup(SmallPoints + (rand8() & 0x1), bodyi_x, bodyi_y);
+                // Small: 50% chance, offset left
+                if (rand8() < 128)
+                    add_pickup(SmallPoints, bodyi_x - 4, bodyi_y);
+                // Large: 10% chance, offset right
+                if (rand8() < 26)
+                    add_pickup(LargePoints, bodyi_x + 4, bodyi_y);
                 delete_body(i);
                 --i;
             } else {

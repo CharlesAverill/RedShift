@@ -90,6 +90,6 @@ clean:
 
 cc65: $(CC) $(AS) $(LD) $(CL)
 $(CC) $(AS) $(LD) $(CL):
-	cd $(TOOLS)/cc65 && make -j
+	- cd $(TOOLS)/cc65 && make bin libsrc
 
 all: build mesen

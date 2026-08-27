@@ -1,11 +1,18 @@
 #include "neslib.h"
 #include "objects/pickups.h"
+#include "objects/ship.h"
+#include "score.h"
+#include "sound.h"
+#include "utils.h"
 
 #define MAX_PICKUPS 4
+#define PICKUP_W    8
+#define PICKUP_H    8
 
 static val n_pickups;
 static Pickup pickups[MAX_PICKUPS];
 static Pickup *p;
+static Rect r1, r2;
 static val pickup_timer;
 
 routine(Pickups_init) {
@@ -24,6 +31,9 @@ static val i;
 routine(Pickups_update) {
     ++pickup_timer;
 
+    r1.width  = PICKUP_W;
+    r1.height = PICKUP_H;
+
     for(i = 0; i < n_pickups; ++i) {
         p = &pickups[i];
         if (!p->lifetime) {
@@ -31,6 +41,32 @@ routine(Pickups_update) {
             --i;
         } else if (pickup_timer & 0x1) {
             --p->lifetime;
+        }
+
+        // Set collision rect        
+        r1.x = p->x;
+        r1.y = p->y;
+
+        // Check if collided with ship
+        r2.x = (ship_x >> 8) + 8;
+        r2.y = (ship_y >> 8) + 8;
+        r2.width = 16;
+        r2.height = 16;
+        if (check_collision(&r1, &r2)) {
+            switch(p->type) {
+                case SmallPoints:
+                    add_score(SMALL_POINTS);
+                    sfx_play(SFX_SMALL_PICKUP, SFX_CHANNEL);
+                    break;
+                case LargePoints:
+                    add_score(LARGE_POINTS);
+                    sfx_play(SFX_LARGE_PICKUP, SFX_CHANNEL);
+                    break;
+                case Shield:
+                    // TODO : regen shield
+                    break;
+            }
+            delete_pickup(i);
         }
     }
 }
