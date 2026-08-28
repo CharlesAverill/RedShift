@@ -15,8 +15,15 @@ typedef enum PickupType {
     SmallPoints,
     LargePoints,
     Shield,
+    PowerupWideShot,
+    PowerupLuck,
+    PowerupProtection,
     PickupTypeEnd
 } PickupType;
+
+#define MIN_POWERUP PowerupWideShot
+#define MAX_POWERUP PowerupProtection
+#define N_POWERUPS  (MAX_POWERUP - MIN_POWERUP)
 
 typedef struct Pickup {
     PickupType type;
@@ -29,6 +36,7 @@ routine(Pickups_update);
 render_routine(Pickups);
 
 routine(destroy_all_pickups);
+routine(spawn_boss_reward_pickups);
 
 void add_pickup(PickupType type, val x, val y);
 

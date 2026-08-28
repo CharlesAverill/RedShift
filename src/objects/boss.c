@@ -3,6 +3,7 @@
 #include "objects/celestial_bodies.h"
 #include "objects/ship.h"
 #include "objects/bullets.h"
+#include "objects/pickups.h"
 #include "events.h"
 #include "sound.h"
 #include "utils.h"
@@ -330,7 +331,8 @@ routine(end_boss_encounter) {
     boss_dying = false;
     boss_coasting = false;
 
-    enable_asteroid_spawns();
+    n_bullets = 0;
+    spawn_boss_reward_pickups();
 
     dim_bgm = false;
     enable_bgm = true;

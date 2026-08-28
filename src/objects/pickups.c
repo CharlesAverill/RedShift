@@ -1,6 +1,8 @@
 #include "neslib.h"
 #include "objects/pickups.h"
 #include "objects/ship.h"
+#include "objects/bullets.h"
+#include "objects/celestial_bodies.h"
 #include "score.h"
 #include "utils.h"
 #include "sound.h"
@@ -15,10 +17,46 @@ static Pickup pickups[MAX_PICKUPS];
 static Pickup *p;
 static Rect r1, r2;
 static val pickup_timer;
+static val bullet_index;
+static bool awaiting_boss_powerup_choice;
+
+static bool is_powerup_pickup(PickupType type) {
+    return type == PowerupWideShot || type == PowerupLuck || type == PowerupProtection;
+}
+
+static void resolve_pickup(PickupType type) {
+    switch(type) {
+        case SmallPoints:
+            add_score(SMALL_POINTS);
+            sfx_play(SFX_SMALL_PICKUP, SFX_CHANNEL);
+            break;
+        case LargePoints:
+            add_score(LARGE_POINTS);
+            sfx_play(SFX_LARGE_PICKUP, SFX_CHANNEL);
+            break;
+        case Shield:
+            ship_regen_shield();
+            sfx_play(SFX_LARGE_PICKUP, SFX_CHANNEL);
+            break;
+        case PowerupWideShot:
+            ship_give_wide_shot();
+            sfx_play(SFX_LARGE_PICKUP, SFX_CHANNEL);
+            break;
+        case PowerupLuck:
+            ship_give_luck();
+            sfx_play(SFX_LARGE_PICKUP, SFX_CHANNEL);
+            break;
+        case PowerupProtection:
+            ship_activate_protection();
+            sfx_play(SFX_LARGE_PICKUP, SFX_CHANNEL);
+            break;
+    }
+}
 
 routine(Pickups_init) {
     n_pickups = 0;
     pickup_timer = 0;
+    awaiting_boss_powerup_choice = false;
 }
 
 void delete_pickup(val n) {
@@ -40,36 +78,54 @@ routine(Pickups_update) {
         if (!p->lifetime) {
             delete_pickup(i);
             --i;
+            continue;
         } else if (pickup_timer & 0x1) {
             --p->lifetime;
         }
 
-        // Set collision rect        
+        // Set collision rect
         r1.x = p->x;
         r1.y = p->y;
+        r1.width = PICKUP_W;
+        r1.height = PICKUP_H;
+
+        // Check for bullet collision
+        for(bullet_index = 0; bullet_index < n_bullets; ++bullet_index) {
+            r2.x = bullets[bullet_index].x >> 8;
+            r2.y = bullets[bullet_index].y >> 8;
+            r2.width = 8;
+            r2.height = 8;
+            if (is_powerup_pickup(p->type) && check_collision(&r1, &r2)) {
+                resolve_pickup(p->type);
+                delete_pickup(i);
+                --i;
+                if (awaiting_boss_powerup_choice) {
+                    awaiting_boss_powerup_choice = false;
+                    for(bullet_index = 0; bullet_index < n_pickups; ++bullet_index) {
+                        if (is_powerup_pickup(pickups[bullet_index].type)) {
+                            delete_pickup(bullet_index);
+                            --bullet_index;
+                        }
+                    }
+                    enable_asteroid_spawns();
+                }
+                goto next_pickup;
+            }
+        }
 
         // Check if collided with ship
         r2.x = (ship_x >> 8) + 8;
         r2.y = (ship_y >> 8) + 8;
         r2.width = 16;
         r2.height = 16;
-        if (check_collision(&r1, &r2)) {
-            switch(p->type) {
-                case SmallPoints:
-                    add_score(SMALL_POINTS);
-                    sfx_play(SFX_SMALL_PICKUP, SFX_CHANNEL);
-                    break;
-                case LargePoints:
-                    add_score(LARGE_POINTS);
-                    sfx_play(SFX_LARGE_PICKUP, SFX_CHANNEL);
-                    break;
-                case Shield:
-                    ship_regen_shield();
-                    sfx_play(SFX_LARGE_PICKUP, SFX_CHANNEL);
-                    break;
-            }
+        if (!is_powerup_pickup(p->type) && check_collision(&r1, &r2)) {
+            resolve_pickup(p->type);
             delete_pickup(i);
+            --i;
         }
+
+next_pickup:
+        ;
     }
 }
 
@@ -78,9 +134,13 @@ val sprite_of_Pickup(Pickup *p) {
         case SmallPoints:
             return SMALL_POINTS_SPRITE;
         case LargePoints:
+        case PowerupLuck:
             return pickup_timer % 16 < 8 ? LARGE_POINTS_SPRITE_1 : LARGE_POINTS_SPRITE_2;
         case Shield:
+        case PowerupProtection:
             return SHIELD_SPRITE;
+        case PowerupWideShot:
+            return BULLET_DIAG_SPRITE;
     }
 }
 
@@ -97,13 +157,47 @@ render_routine(Pickups) {
 void add_pickup(PickupType type, val x, val y) {
     if (n_pickups >= MAX_PICKUPS)
         return;
-    
+
+    p = &pickups[n_pickups];
     p->type = type;
     p->x = x;
     p->y = y;
     p->lifetime = (type == Shield) ? (PICKUP_LIFETIME * 3) : PICKUP_LIFETIME;
-    pickups[n_pickups] = *p;
     ++n_pickups;
+}
+
+void spawn_boss_reward_pickups(void) {
+    static val available[3];
+    static val available_count;
+    static val choice;
+    static val pos_a, pos_b;
+    available_count = 0;
+
+    awaiting_boss_powerup_choice = true;
+    disable_asteroid_spawns();
+
+    for(choice = MIN_POWERUP; choice <= MAX_POWERUP; ++choice) {
+        if (choice == PowerupWideShot && ship_has_wide_shot())
+            continue;
+        if (choice == PowerupLuck && ship_has_luck())
+            continue;
+        available[available_count++] = choice;
+    }
+
+    if (available_count == 0)
+        return;
+    if (available_count == 1) {
+        add_pickup(available[0], 128, 104);
+        return;
+    }
+
+    pos_a = rand8() % available_count;
+    do {
+        pos_b = rand8() % available_count;
+    } while (pos_b == pos_a);
+
+    add_pickup(available[pos_a], 88, 104);
+    add_pickup(available[pos_b], 168, 104);
 }
 
 routine(destroy_all_pickups) {

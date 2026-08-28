@@ -46,6 +46,12 @@ routine(Ship_update);
 render_routine(Ship);
 routine(ship_damage);
 routine(ship_regen_shield);
+void ship_give_wide_shot(void);
+void ship_give_luck(void);
+void ship_activate_protection(void);
+bool __fastcall__ ship_has_wide_shot(void);
+bool __fastcall__ ship_has_luck(void);
+bool __fastcall__ ship_has_protection(void);
 bool __fastcall__ ship_below_full_health(void);
 
 #endif /* SHIP */

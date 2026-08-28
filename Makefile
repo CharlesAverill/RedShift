@@ -3,7 +3,6 @@
 MAKEFLAGS += -r
 
 NAME := RedShift
-build: $(NAME).nes $(CC) $(AS) $(LD) $(CL)
 
 # Paths
 TOOLS := tools
@@ -21,10 +20,12 @@ MESEN := mesen
 FCEUX := fceux
 NESST := $(TOOLS)/NESst
 
-CC=$(TOOLS)/cc65/bin/cc65
-AS=$(TOOLS)/cc65/bin/ca65
-LD=$(TOOLS)/cc65/bin/ld65
-CL=$(TOOLS)/cc65/bin/cl65
+CC := $(TOOLS)/cc65/bin/cc65
+AS := $(TOOLS)/cc65/bin/ca65
+LD := $(TOOLS)/cc65/bin/ld65
+CL := $(TOOLS)/cc65/bin/cl65
+
+build: $(NAME).nes
 
 rwildcard=$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst *,%,$2),$d))
 

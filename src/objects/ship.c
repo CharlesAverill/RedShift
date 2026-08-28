@@ -16,6 +16,9 @@ static val iframe_ctr;
 static val kill_ship_timer;
 static bool ship_dead;
 static bool music_stopped;
+static bool wide_shot;
+static bool luck_charm;
+static bool protection_ready;
 
 #define SHIP_MAX_HEALTH 4
 
@@ -30,6 +33,9 @@ routine(Ship_init) {
 
     kill_ship_flag = ship_dead = music_stopped = false;
     kill_ship_timer = 0;
+    wide_shot = false;
+    luck_charm = false;
+    protection_ready = false;
 
     health = SHIP_MAX_HEALTH;
     iframe_ctr = 1;
@@ -115,15 +121,27 @@ routine(Ship_update) {
     // Blasters
     #define SHIP_RADIUS (sbigval)8
     if (triggered(A) && !boss_invincible) {
+        sbigval fire_x, fire_y, fire_vx, fire_vy, spread_x, spread_y;
+
         facing_up = ship_rotation < 32 || ship_rotation > 220;
         facing_down = 96 < ship_rotation && ship_rotation < 160;
-        add_bullet(
-            ((ship_x >> 8) + 5 + (SHIP_RADIUS * ((sbigval)cos(ship_rotation & 31) - 128) / 128)) << 8,
-            ((ship_y >> 8) + (facing_up ? 8 : (facing_down ? 16 : 8)) + (SHIP_RADIUS * ((sbigval)sin(ship_rotation & 31) - 128) / 128)) << 8,
-            ship_vx + (BULLET_SPEED * ((sbigval)sin(ship_rotation) - 128) / 128 << 8),
-            ship_vy + (BULLET_SPEED * ((sbigval)cos(ship_rotation) - 128) / 128 << 8),
-            ((ship_rotation + 16) / 32) & 7
-        );
+
+        fire_x = ((ship_x >> 8) + 5 + (SHIP_RADIUS * ((sbigval)cos(ship_rotation & 31) - 128) / 128)) << 8;
+        fire_y = ((ship_y >> 8) + (facing_up ? 8 : (facing_down ? 16 : 8)) + (SHIP_RADIUS * ((sbigval)sin(ship_rotation & 31) - 128) / 128)) << 8;
+        fire_vx = ship_vx + (BULLET_SPEED * ((sbigval)sin(ship_rotation) - 128) / 128 << 8);
+        fire_vy = ship_vy + (BULLET_SPEED * ((sbigval)cos(ship_rotation) - 128) / 128 << 8);
+
+        spread_x = ((sbigval)sin(ship_rotation + 32) - 128) / 8;
+        spread_y = ((sbigval)cos(ship_rotation + 32) - 128) / 8;
+
+        if (!wide_shot) {
+            add_bullet(fire_x, fire_y, fire_vx, fire_vy, ((ship_rotation + 16) / 32) & 7);
+        } else {
+            add_bullet(fire_x + (spread_x << 8), fire_y + (spread_y << 8), fire_vx, fire_vy,
+                ((ship_rotation + 16) / 32) & 7);
+            add_bullet(fire_x - (spread_x << 8), fire_y - (spread_y << 8), fire_vx, fire_vy,
+                ((ship_rotation + 16) / 32) & 7);
+        }
     }
     
     // Apply velocity
@@ -178,10 +196,17 @@ render_routine(Ship) {
 }
 
 routine(ship_damage) {
-    if (iframe_ctr) {
+    if (iframe_ctr || kill_ship_flag) {
         if (iframe_ctr >= 60)
             iframe_ctr = 0;
 
+        return;
+    }
+
+    if (protection_ready) {
+        protection_ready = false;
+        iframe_ctr = 1;
+        sfx_play(SFX_LARGE_PICKUP, SFX_CHANNEL);
         return;
     }
 
@@ -200,6 +225,30 @@ routine(ship_damage) {
 routine(ship_regen_shield) {
     if (health < SHIP_MAX_HEALTH)
         ++health;
+}
+
+void ship_give_wide_shot(void) {
+    wide_shot = true;
+}
+
+void ship_give_luck(void) {
+    luck_charm = true;
+}
+
+void ship_activate_protection(void) {
+    protection_ready = true;
+}
+
+bool __fastcall__ ship_has_wide_shot(void) {
+    return wide_shot;
+}
+
+bool __fastcall__ ship_has_luck(void) {
+    return luck_charm;
+}
+
+bool __fastcall__ ship_has_protection(void) {
+    return protection_ready;
 }
 
 bool __fastcall__ ship_below_full_health(void) {

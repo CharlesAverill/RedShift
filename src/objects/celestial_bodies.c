@@ -182,11 +182,15 @@ collision_check:
         if (bodyi_ptr->dead) {
             if (bodyi_ptr->dead_frame >= 24) {
                 if (bodyi_ptr->drop_pickup) {
-                    if (rand8() < 128) // 50%
+                    val small_chance = ship_has_luck() ? 180 : 128;
+                    val large_chance = ship_has_luck() ? 110 : 54;
+                    val shield_chance = ship_has_luck() ? 100 : 54;
+
+                    if (rand8() < small_chance) // 50-70%
                         add_pickup(SmallPoints, bodyi_x - 4, bodyi_y);
-                    if (rand8() < 54) // 25%
+                    if (rand8() < large_chance) // 25-43%
                         add_pickup(LargePoints, bodyi_x + 4, bodyi_y);
-                    if (ship_below_full_health() && rand8() < 54) // 25% when hurt
+                    if (ship_below_full_health() && rand8() < shield_chance) // 25-39% when hurt
                         add_pickup(Shield, bodyi_x, bodyi_y);
                 }
                 delete_body(i);
