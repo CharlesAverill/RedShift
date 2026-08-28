@@ -137,12 +137,12 @@ routine(Ship_update) {
         spread_y = ((sbigval)cos(ship_rotation + 32) - 128) / 8;
 
         if (!wide_shot) {
-            add_bullet(fire_x, fire_y, fire_vx, fire_vy, ((ship_rotation + 16) / 32) & 7);
+            add_bullet(fire_x, fire_y, fire_vx, fire_vy, ((ship_rotation + 16) >> 5) & 7);
         } else {
             add_bullet(fire_x + (spread_x << 8), fire_y + (spread_y << 8), fire_vx, fire_vy,
-                ((ship_rotation + 16) / 32) & 7);
+                ((ship_rotation + 16) >> 5) & 7);
             add_bullet(fire_x - (spread_x << 8), fire_y - (spread_y << 8), fire_vx, fire_vy,
-                ((ship_rotation + 16) / 32) & 7);
+                ((ship_rotation + 16) >> 5) & 7);
         }
     }
     
