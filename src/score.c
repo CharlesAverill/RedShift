@@ -10,7 +10,7 @@
 #define SCORE_X  2
 #define SCORE_Y  2
 
-#define ROLLOVER_SCORE 5
+#define ROLLOVER_SCORE 1000
 #define MAX_MULT       20
 
 Score score;

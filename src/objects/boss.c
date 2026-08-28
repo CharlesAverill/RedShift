@@ -88,6 +88,29 @@ static const val boss_health_by_tier[BOSS_TIER_COUNT] = {
 
 static val lvl;
 
+static const unsigned char boss_bg_palettes[MAX_TIER + 1][16] = {
+    { BLACK, DARK_BLUE, BLUE_1, LIGHT_BLUE, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
+    { BLACK, DARK_BLUE, MID_BLUE, LIGHT_BLUE_3, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
+    { BLACK, DARK_PURPLE, PURPLE_1, LIGHT_PURPLE_1, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
+    { BLACK, DARK_PURPLE, LIGHT_MAGENTA, PINK_2, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
+    { BLACK, DARK_RED, ORANGE_2, LIGHT_YELLOW, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
+    { BLACK, DARK_RED, LIGHT_RED_1, ORANGE_1, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
+    { BLACK, DARK_GREEN, GREEN_5, LIGHT_GREEN_1, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
+    { BLACK, DARK_GREEN, GREEN_3, LIGHT_LIME, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
+    { BLACK, DARK_CYAN, CYAN_1, LIGHT_CYAN, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
+    { BLACK, DARK_CYAN, LIGHT_BLUE_1, LIGHT_CYAN, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
+    { BLACK, DARK_PURPLE, LIGHT_PURPLE, LIGHT_MAGENTA_1, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
+    { BLACK, DARK_BLUE, BLUE_2, LIGHT_BLUE_3, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
+    { BLACK, DARK_RED, ORANGE_2, LIGHT_ORANGE, 0,0,0,0, 0,0,0,0, 0,0,0,0 }
+};
+
+static void apply_boss_tier_palette(void) {
+    val tier = score.tier;
+    if (tier > MAX_TIER)
+        tier = MAX_TIER;
+    pal_bg(boss_bg_palettes[tier]);
+}
+
 // Apply the current speed magnitude, preserving each axis's direction
 static void boss_apply_speed(void) {
     boss_vx = (boss_vx < 0) ? -(sbigval)boss_speed : (sbigval)boss_speed;
@@ -333,6 +356,7 @@ routine(end_boss_encounter) {
 
     n_bullets = 0;
     spawn_boss_reward_pickups();
+    apply_boss_tier_palette();
 
     dim_bgm = false;
     enable_bgm = true;

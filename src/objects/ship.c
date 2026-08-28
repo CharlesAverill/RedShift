@@ -18,6 +18,7 @@ static bool ship_dead;
 static bool music_stopped;
 static bool wide_shot;
 static bool luck_charm;
+static bool magnet_active;
 static bool protection_ready;
 
 #define SHIP_MAX_HEALTH 4
@@ -35,6 +36,7 @@ routine(Ship_init) {
     kill_ship_timer = 0;
     wide_shot = false;
     luck_charm = false;
+    magnet_active = false;
     protection_ready = false;
 
     health = SHIP_MAX_HEALTH;
@@ -173,7 +175,7 @@ render_routine(Ship) {
                 break;
         }
 
-        if (iframe_ctr % 2)
+        if (iframe_ctr & 1)
             return nxt;
     }
 
@@ -235,6 +237,10 @@ void ship_give_luck(void) {
     luck_charm = true;
 }
 
+void ship_give_magnet(void) {
+    magnet_active = true;
+}
+
 void ship_activate_protection(void) {
     protection_ready = true;
 }
@@ -245,6 +251,10 @@ bool __fastcall__ ship_has_wide_shot(void) {
 
 bool __fastcall__ ship_has_luck(void) {
     return luck_charm;
+}
+
+bool __fastcall__ ship_has_magnet(void) {
+    return magnet_active;
 }
 
 bool __fastcall__ ship_has_protection(void) {

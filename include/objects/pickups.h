@@ -9,6 +9,7 @@
 #define LARGE_POINTS_SPRITE_1 _PICKUP_ROW2 + 2
 #define LARGE_POINTS_SPRITE_2 _PICKUP_ROW2 + 4
 #define SHIELD_SPRITE         _PICKUP_ROW2 + 6
+#define MAGNET_SPRITE         _PICKUP_ROW2 + 7
 #define PICKUPS_PALETTE 2
 
 typedef enum PickupType {
@@ -17,13 +18,14 @@ typedef enum PickupType {
     Shield,
     PowerupWideShot,
     PowerupLuck,
+    PowerupMagnet,
     PowerupProtection,
     PickupTypeEnd
 } PickupType;
 
 #define MIN_POWERUP PowerupWideShot
 #define MAX_POWERUP PowerupProtection
-#define N_POWERUPS  (MAX_POWERUP - MIN_POWERUP)
+#define N_POWERUPS  (MAX_POWERUP - MIN_POWERUP + 1)
 
 typedef struct Pickup {
     PickupType type;

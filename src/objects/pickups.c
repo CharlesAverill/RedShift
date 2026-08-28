@@ -11,6 +11,7 @@
 #define PICKUP_W    8
 #define PICKUP_H    8
 #define PICKUP_LIFETIME 255
+#define MAGNET_RANGE 64
 
 static val n_pickups;
 static Pickup pickups[MAX_PICKUPS];
@@ -21,7 +22,7 @@ static val bullet_index;
 static bool awaiting_boss_powerup_choice;
 
 static bool is_powerup_pickup(PickupType type) {
-    return type == PowerupWideShot || type == PowerupLuck || type == PowerupProtection;
+    return MIN_POWERUP <= type && type <= MAX_POWERUP;
 }
 
 static void resolve_pickup(PickupType type) {
@@ -46,6 +47,10 @@ static void resolve_pickup(PickupType type) {
             ship_give_luck();
             sfx_play(SFX_LARGE_PICKUP, SFX_CHANNEL);
             break;
+        case PowerupMagnet:
+            ship_give_magnet();
+            sfx_play(SFX_LARGE_PICKUP, SFX_CHANNEL);
+            break;
         case PowerupProtection:
             ship_activate_protection();
             sfx_play(SFX_LARGE_PICKUP, SFX_CHANNEL);
@@ -67,7 +72,10 @@ void delete_pickup(val n) {
 }
 
 static val i;
+#define pull 2
 routine(Pickups_update) {
+    static sbigval ship_px, ship_py, dx, dy, dist;
+
     ++pickup_timer;
 
     r1.width  = PICKUP_W;
@@ -75,12 +83,27 @@ routine(Pickups_update) {
 
     for(i = 0; i < n_pickups; ++i) {
         p = &pickups[i];
-        if (!p->lifetime) {
+        if (is_powerup_pickup(p->type)) {
+            // Boss-reward powerups never time out; the player must pick one.
+        } else if (!p->lifetime) {
             delete_pickup(i);
             --i;
             continue;
         } else if (pickup_timer & 0x1) {
             --p->lifetime;
+        }
+
+        if (ship_has_magnet() && !awaiting_boss_powerup_choice) {
+            ship_px = ((ship_x >> 8) + 8);
+            ship_py = ((ship_y >> 8) + 8);
+            dx = ship_px - p->x;
+            dy = ship_py - p->y;
+            dist = (dx < 0 ? -dx : dx) + (dy < 0 ? -dy : dy);
+
+            if (dist > 0 && dist < MAGNET_RANGE) {
+                p->x += (dx * pull) / (dist + 8);
+                p->y += (dy * pull) / (dist + 8);
+            }
         }
 
         // Set collision rect
@@ -141,7 +164,10 @@ val sprite_of_Pickup(Pickup *p) {
             return SHIELD_SPRITE;
         case PowerupWideShot:
             return BULLET_DIAG_SPRITE;
+        case PowerupMagnet:
+            return MAGNET_SPRITE;
     }
+    return SMALL_POINTS_SPRITE;
 }
 
 static val nxt;
@@ -167,10 +193,12 @@ void add_pickup(PickupType type, val x, val y) {
 }
 
 void spawn_boss_reward_pickups(void) {
-    static val available[3];
+    static val available[N_POWERUPS];
     static val available_count;
     static val choice;
     static val pos_a, pos_b;
+
+    n_pickups = 0;
     available_count = 0;
 
     awaiting_boss_powerup_choice = true;
@@ -181,12 +209,16 @@ void spawn_boss_reward_pickups(void) {
             continue;
         if (choice == PowerupLuck && ship_has_luck())
             continue;
+        if (choice == PowerupMagnet && ship_has_magnet())
+            continue;
         available[available_count++] = choice;
     }
 
-    if (available_count == 0)
+    if (available_count == 0) {
+        awaiting_boss_powerup_choice = false;
+        enable_asteroid_spawns();
         return;
-    if (available_count == 1) {
+    } else if (available_count == 1) {
         add_pickup(available[0], 128, 104);
         return;
     }
@@ -202,4 +234,4 @@ void spawn_boss_reward_pickups(void) {
 
 routine(destroy_all_pickups) {
     n_pickups = 0;
-} 
+}
