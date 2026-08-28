@@ -5,6 +5,7 @@
 #include "sound.h"
 #include "events.h" 
 #include "score.h"
+#include "objects/boss.h"
 
 bigval ship_x, ship_y;
 sbigval ship_vx, ship_vy;
@@ -113,7 +114,7 @@ routine(Ship_update) {
 
     // Blasters
     #define SHIP_RADIUS (sbigval)8
-    if (triggered(A)) {
+    if (triggered(A) && !boss_invincible) {
         facing_up = ship_rotation < 32 || ship_rotation > 220;
         facing_down = 96 < ship_rotation && ship_rotation < 160;
         add_bullet(

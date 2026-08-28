@@ -8,6 +8,7 @@
 #include "nesdoug.h"
 #include "sound.h"
 #include "objects/ship.h"
+#include "objects/boss.h"
 #include "string.h"
 
 const val title_screen_palettes[] = {
@@ -28,7 +29,7 @@ const val play_sprite_palettes[] = {
     SHIP_PALETTE,
     GRAYSCALE,
     EXPLOSION_PALETTE, // also bullets
-    0, 0, 0, 0
+    BOSS1_PALETTE
 };
 
 static const val font_base_tiles[ScreenEnd] = {0xC0, 0xC1, 0xC1};
