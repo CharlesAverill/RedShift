@@ -2,6 +2,7 @@
 #include "nesdoug.h"
 #include "neslib.h"
 #include "string.h"
+#include "events.h"
 
 #define PLAY_FONT_BASE  0xC1
 #define DIGIT_TILE(ch)  ((ch) - ' ' + PLAY_FONT_BASE)
@@ -33,10 +34,11 @@ void __fastcall__ add_score(val delta) {
         score.mantissa -= 1000;
         ++score.tier;
         score_mult >>= 4;
+        start_boss_encounter = true;
     }
     if (score.tier == MAX_TIER && score.mantissa > 999)
         score.mantissa = 999;
-    if (score_mult < MAX_MULT)
+    if (score_mult < MAX_MULT && delta > 1)
         ++score_mult;
 }
 

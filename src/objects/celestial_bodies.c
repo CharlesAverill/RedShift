@@ -8,6 +8,7 @@
 #include "objects/ship.h"
 #include "objects/pickups.h"
 #include "events.h"
+#include "score.h"
 
 void delete_body(val n);
 
@@ -28,6 +29,7 @@ static val n_bodies = 0;
 static CBody bodies[MAX_BODIES];
 static val i, j;
 static val spawn_timer;
+static bool do_spawns = true;
 
 static val out;
 val random_attrs(void) {
@@ -160,7 +162,8 @@ collision_check:
                 spawn_vy = (rand8() >> 1) * (rand8() % 0x1 ? 1 : -1);
             }
             
-            add_body(spawn_x, spawn_y, spawn_vx, spawn_vy, rand8() % CBodyTypeEnd, rand8() < 85, random_attrs());
+            if (do_spawns)
+                add_body(spawn_x, spawn_y, spawn_vx, spawn_vy, rand8() % CBodyTypeEnd, rand8() < 85, random_attrs());
             spawn_timer = 0;
         }
     }
@@ -220,6 +223,7 @@ collision_check:
                     bodyi_ptr->dead_frame = 0;
                     bodyi_ptr->vx = 0;
                     bodyi_ptr->vy = 0;
+                    add_score(1);
                     if (!kill_ship_flag)
                         sfx_play(SFX_EXPLOSION, SFX_CHANNEL);
                     break;
@@ -293,4 +297,12 @@ void add_body(bigval x, bigval y, sbigval vx, sbigval vy, CBodyType type, bool h
 
 routine(destroy_all_bodies) {
     n_bodies = 0;
+}
+
+routine(enable_asteroid_spawns) {
+    do_spawns = true;
+}
+
+routine(disable_asteroid_spawns) {
+    do_spawns = false;
 }

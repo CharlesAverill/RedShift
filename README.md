@@ -7,7 +7,7 @@ It's written using [neslib](https://github.com/clbr/neslib) and [famitone5](http
 The build process makes heavy use of [cc65](https://cc65.github.io/).
 
 The latest release can always be downloaded [here](https://github.com/CharlesAverill/RedShift/raw/refs/heads/main/RedShift.nes).
-Eventually I'll host an in-browser version.
+An in-browser version can be played [here](https://charles.systems/RedShift).
 
 Read the [manual!](manual/manual.pdf)
 
@@ -29,6 +29,7 @@ Install dependencies:
 ```bash
 git clone https://github.com/CharlesAverill/RedShift.git --recurse-submodules
 cd RedShift
+make cc65
 make
 ```
 
@@ -49,3 +50,4 @@ make
 |---|---|
 | Background music | [Passou por mim e sorriu - Deolinda](https://www.youtube.com/watch?v=L_ymvjxErs0) |
 | Game Over music | [Prelude, Op. 28, No. 4 - Chopin](https://en.wikipedia.org/wiki/Prelude,_Op._28,_No._4_(Chopin)) |
+| Boss music | ["Dance of the Knights" from Romeo and Juliet - Prokofiev](https://en.wikipedia.org/wiki/Romeo_and_Juliet_(Prokofiev))) |

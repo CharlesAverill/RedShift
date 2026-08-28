@@ -40,4 +40,7 @@ routine(destroy_all_bodies);
 
 extern bool do_collision_checks;
 
+routine(enable_asteroid_spawns);
+routine(disable_asteroid_spawns);
+
 #endif

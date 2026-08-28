@@ -808,5 +808,13 @@ _seed_rng:
 	sta <RAND_SEED
 	rts
 	
-	
+.export _set_music_volume
+
+; void __fastcall__ set_music_volume(unsigned char level);  // 0..15
+_set_music_volume:
+	and #$0f          ; clamp to 0..15
+	sta volume_Sq1
+	sta volume_Sq2
+	sta volume_Nz
+	rts	
 	

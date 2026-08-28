@@ -164,3 +164,5 @@ void gray_line(void);
 
 void seed_rng(void);
 // get from the frame count. You can use a button (start on title screen) to trigger
+
+void __fastcall__ set_music_volume(unsigned char level);  // 0=silent .. 15=full
