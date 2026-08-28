@@ -11,6 +11,8 @@ typedef struct {
     val tier;
 } Score;
 
+#define MAX_TIER 12
+
 extern Score score;
 extern val score_mult;
 
@@ -19,4 +21,4 @@ routine(reset_score);
 routine(reset_score_multiplier);
 render_routine(Score);
 
-#endif
+#endif /* SCORE */

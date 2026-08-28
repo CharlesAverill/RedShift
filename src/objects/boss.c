@@ -7,9 +7,7 @@
 #include "sound.h"
 #include "utils.h"
 #include "neslib.h"
-
-extern const unsigned char boss_metasprite[];
-extern const val* const explosion_list[];   // ship's explosion, reused for boss death
+#include "score.h"
 
 bool start_boss_encounter = false;
 bool boss_active = false;
@@ -55,6 +53,40 @@ static val boss_ms_buf[17];
 #define BOSS_ENTER_Y     ((bigval)40 << 8)
 #define BOSS_ENTER_SPEED 0x0060
 
+#define BOSS_TIER_COUNT  (MAX_TIER + 1)
+
+static const bigval boss_speed_by_tier[BOSS_TIER_COUNT] = {
+    0x0140,
+    0x0140,
+    0x0180,
+    0x01C0,
+    0x0200,
+    0x0240,
+    0x0280,
+    0x02C0,
+    0x0300,
+    0x0340,
+    0x0380,
+    0x03C0
+};
+
+static const val boss_health_by_tier[BOSS_TIER_COUNT] = {
+    3,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+};
+
+static val lvl;
+
 // Apply the current speed magnitude, preserving each axis's direction
 static void boss_apply_speed(void) {
     boss_vx = (boss_vx < 0) ? -(sbigval)boss_speed : (sbigval)boss_speed;
@@ -93,6 +125,8 @@ routine(Boss_init) {
 }
 
 routine(trigger_boss_encounter) {
+	Boss_init();
+	
     start_boss_encounter = false;
     boss_active = true;
     destroy_all_bodies();
@@ -103,6 +137,13 @@ routine(trigger_boss_encounter) {
 
     disable_asteroid_spawns();
 
+    // Scale difficulty
+	lvl = score.tier;
+	if (lvl >= BOSS_TIER_COUNT)
+		lvl = BOSS_TIER_COUNT - 1;
+	boss_speed = boss_speed_by_tier[lvl];
+	boss_health = boss_health_by_tier[lvl];
+
     // Cinematic entrance
     boss_entering = true;
     boss_invincible = true;
@@ -110,7 +151,6 @@ routine(trigger_boss_encounter) {
     boss_coasting = false;
     boss_x = BOSS_ENTER_X;
     boss_y = (bigval)(-((sbigval)BOSS_H << 8));
-    boss_health = BOSS_MAX_HEALTH;
     boss_bounce_count = 0;
     boss_pause_timer = 0;
     boss_hit_timer = 0;
@@ -265,8 +305,6 @@ routine(Boss_update) {
                 sfx_play(SFX_EXPLOSION, SFX_CHANNEL);
 
                 if (--boss_health == 0) {
-                    // Fatal hit: fade the music now, then coast to a stop
-                    // before the explosion. No more hits.
                     boss_coasting = true;
                     boss_invincible = true;
                     enable_bgm = false;

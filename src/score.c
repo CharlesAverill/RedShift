@@ -10,13 +10,13 @@
 #define SCORE_X  2
 #define SCORE_Y  2
 
-#define MAX_MULT     20
+#define ROLLOVER_SCORE 1000
+#define MAX_MULT       20
 
 Score score;
 unsigned char score_mult;
 
-static const char suffix[] = { ' ', 'K', 'M', 'B', 'T', 'Q', 'P', 'S', 'H', 'O', 'N', 'D' };
-#define MAX_TIER 11
+static const char suffix[MAX_TIER] = { ' ', 'K', 'M', 'B', 'T', 'Q', 'P', 'S', 'H', 'O', 'N', 'D'};
 
 routine(reset_score) {
     score.mantissa = 0;
@@ -30,8 +30,8 @@ routine(reset_score_multiplier) {
 
 void __fastcall__ add_score(val delta) {
     score.mantissa += (unsigned)delta * score_mult;
-    while (score.mantissa >= 1000 && score.tier < MAX_TIER) {
-        score.mantissa -= 1000;
+    while (score.mantissa >= ROLLOVER_SCORE&& score.tier < MAX_TIER) {
+        score.mantissa -= ROLLOVER_SCORE;
         ++score.tier;
         score_mult >>= 4;
         start_boss_encounter = true;
