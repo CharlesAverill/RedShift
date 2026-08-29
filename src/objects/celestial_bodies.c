@@ -6,6 +6,7 @@
 #include "utils.h"
 #include "sound.h"
 #include "objects/ship.h"
+#include "objects/boss.h"
 #include "objects/pickups.h"
 #include "events.h"
 #include "score.h"
@@ -50,14 +51,14 @@ routine(CBodies_init) {
     // }
 }
 
-static sbigval dx, dy;
+static sval dx, dy;
 static CBody *bodyi_ptr, *bodyj_ptr;
 static val typei, typej;
 static Rect r1, r2;
 static sbigval bodyi_x, bodyi_y, bodyj_x, bodyj_y;
 static sbigval bodyi_vx, bodyi_vy, bodyj_vx, bodyj_vy;
 
-#define GRAVITY_RANGE 128
+#define GRAVITY_RANGE 64
 #define GRAVITY_STRENGTH 4
 
 static val gravity_timer;
@@ -228,7 +229,8 @@ collision_check:
                     bodyi_ptr->dead_frame = 0;
                     bodyi_ptr->vx = 0;
                     bodyi_ptr->vy = 0;
-                    add_score(1);
+                    if (!boss_active)
+                        add_score(1);
                     if (!kill_ship_flag)
                         sfx_play(SFX_EXPLOSION, SFX_CHANNEL);
                     break;
@@ -270,9 +272,9 @@ static void roll_body_drops(sbigval x, sbigval y) {
     val large_chance = ship_has_luck() ? 110 : 54;
     val shield_chance = ship_has_luck() ? 100 : 54;
 
-    if (rand8() < small_chance) // 50-70%
+    if (!boss_active && rand8() < small_chance) // 50-70%
         add_pickup(SmallPoints, x - 4, y);
-    if (rand8() < large_chance) // 25-43%
+    if (!boss_active && rand8() < large_chance) // 25-43%
         add_pickup(LargePoints, x + 4, y);
     if (ship_below_full_health() && rand8() < shield_chance) // 25-39% when hurt
         add_pickup(Shield, x, y);

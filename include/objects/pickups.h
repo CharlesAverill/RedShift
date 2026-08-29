@@ -29,7 +29,7 @@ typedef enum PickupType {
 
 typedef struct Pickup {
     PickupType type;
-    val x, y;
+    bigval x, y;
     bigval lifetime;
 } Pickup;
 

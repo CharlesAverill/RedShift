@@ -29,14 +29,13 @@ val cos(val x) {
 }
 
 // https://en.wikipedia.org/wiki/Integer_square_root#Algorithm_using_binary_search
-static val L, R;
-static unsigned short M;
+static val L, R, M;
 val isqrt(val x) {
     L = 0;
     R = x + 1;
 
     while (L != R - 1) {
-        M = (L + R) / 2;
+        M = ((unsigned short)L + R) >> 1;
         if (M * M <= x)
             L = M;
         else
@@ -110,8 +109,8 @@ val atan2(sbigval y, sbigval x) {
         
         // Compare y/x with sin(mid)/cos(mid)
         // Avoid division: y * cos(mid) vs x * sin(mid)
-        lhs = ((sbigval)abs_y * (sbigval)(cos(mid) - 128)) / 128;
-        rhs = ((sbigval)abs_x * (sbigval)(sin(mid) - 128)) / 128;
+        lhs = (sbigval)(((long)abs_y * (sbigval)(cos(mid) - 128)) / 128);
+        rhs = (sbigval)(((long)abs_x * (sbigval)(sin(mid) - 128)) / 128);
         
         error = lhs - rhs;
         if (error < 0) error = -error;
@@ -120,11 +119,11 @@ val atan2(sbigval y, sbigval x) {
             best_error = error;
             best_angle = mid;
         }
-        
+
         if (lhs < rhs)
-            low = mid + 1;
-        else
             high = mid;
+        else
+            low = mid + 1;
     }
     
     // Map to correct quadrant

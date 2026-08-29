@@ -10,6 +10,7 @@
 #include "objects/ship.h"
 #include "objects/boss.h"
 #include "string.h"
+#include "utils.h"
 
 const val title_screen_palettes[] = {
     BLACK, 0x05, 0x10, WHITE,
@@ -59,7 +60,11 @@ void write_centered_text_bg(const char *str, val start_y, val len, val ascii_off
 }
 
 const val press_start[] = "PRESS START\0";
+#if DEBUG_MODE == 1
+const val charles_averill[] = "  DEBUG  MODE  \0";
+#else
 const val charles_averill[] = "CHARLES AVERILL\0";
+#endif
 const val charles_systems[] = "CHARLES.SYSTEMS\0";
 
 const val game_over_str[] = "GAME OVER\0";

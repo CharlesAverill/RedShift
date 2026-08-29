@@ -6,6 +6,7 @@
 #include "events.h" 
 #include "score.h"
 #include "objects/boss.h"
+#include "utils.h"
 
 bigval ship_x, ship_y;
 sbigval ship_vx, ship_vy;
@@ -14,6 +15,7 @@ bool kill_ship_flag;
 static val health;
 static val iframe_ctr;
 static val kill_ship_timer;
+static val kill_ship_halve_timer;
 static bool ship_dead;
 static bool music_stopped;
 static bool wide_shot;
@@ -34,10 +36,18 @@ routine(Ship_init) {
 
     kill_ship_flag = ship_dead = music_stopped = false;
     kill_ship_timer = 0;
+    kill_ship_halve_timer = 0;
+#if DEBUG_MODE == 1
+    wide_shot = true;
+    luck_charm = true;
+    magnet_active = true;
+    protection_ready = true;
+#else
     wide_shot = false;
     luck_charm = false;
     magnet_active = false;
     protection_ready = false;
+#endif
 
     health = SHIP_MAX_HEALTH;
     iframe_ctr = 1;
@@ -51,7 +61,9 @@ static sbigval diff1, diff2;
 static bool facing_up, facing_down;
 routine(Ship_update) {
     if (kill_ship_flag) {
-        if (++kill_ship_timer % 20 == 0) {
+        ++kill_ship_timer;
+        if (++kill_ship_halve_timer >= 20) {
+            kill_ship_halve_timer = 0;
             ship_vx /= 2;
             ship_vy /= 2;
         }
@@ -120,15 +132,14 @@ routine(Ship_update) {
     if (ship_vy < -MAX_SPEED) ship_vy = -MAX_SPEED;
 
     // Blasters
-    #define SHIP_RADIUS (sbigval)8
     if (triggered(A) && !boss_invincible) {
         sbigval fire_x, fire_y, fire_vx, fire_vy, spread_x, spread_y;
 
         facing_up = ship_rotation < 32 || ship_rotation > 220;
         facing_down = 96 < ship_rotation && ship_rotation < 160;
 
-        fire_x = ((ship_x >> 8) + 5 + (SHIP_RADIUS * ((sbigval)cos(ship_rotation & 31) - 128) / 128)) << 8;
-        fire_y = ((ship_y >> 8) + (facing_up ? 8 : (facing_down ? 16 : 8)) + (SHIP_RADIUS * ((sbigval)sin(ship_rotation & 31) - 128) / 128)) << 8;
+        fire_x = ((ship_x >> 8) + 5 + ((((sbigval)cos(ship_rotation & 31) - 128) << 3) / 128)) << 8;
+        fire_y = ((ship_y >> 8) + (facing_up ? 8 : (facing_down ? 16 : 8)) + ((((sbigval)sin(ship_rotation & 31) - 128) << 3) / 128)) << 8;
         fire_vx = ship_vx + (BULLET_SPEED * ((sbigval)sin(ship_rotation) - 128) / 128 << 8);
         fire_vy = ship_vy + (BULLET_SPEED * ((sbigval)cos(ship_rotation) - 128) / 128 << 8);
 
@@ -217,7 +228,9 @@ routine(ship_damage) {
         sfx_play(SFX_GAME_OVER, SFX_CHANNEL);
     } else {
         reset_score_multiplier();
+#if DEBUG_MODE == 0
         --health;
+#endif
         iframe_ctr = 1;
         sfx_play(SFX_EXPLOSION, SFX_CHANNEL);
     }

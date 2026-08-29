@@ -12,6 +12,8 @@
 #define PICKUP_H    8
 #define PICKUP_LIFETIME 255
 #define MAGNET_RANGE 64
+#define MAGNET_MAX_SPEED 768
+#define MAGNET_MIN_SPEED 64
 
 static val n_pickups;
 static Pickup pickups[MAX_PICKUPS];
@@ -69,9 +71,14 @@ static void delete_pickup(val n) {
 }
 
 static val i;
-#define pull 2
+static bool cur_is_powerup;
+static bigval px, py;
+static Bullet *bp;
 routine(Pickups_update) {
-    static sbigval ship_px, ship_py, dx, dy, dist;
+    static bigval ship_cx, ship_cy;
+    static sbigval dx, dy;
+    static val abs_dx, abs_dy, dist;
+    static bigval speed, mag;
 
     ++pickup_timer;
 
@@ -80,7 +87,8 @@ routine(Pickups_update) {
 
     for(i = 0; i < n_pickups; ++i) {
         p = &pickups[i];
-        if (is_powerup_pickup(p->type)) {
+        cur_is_powerup = is_powerup_pickup(p->type);
+        if (cur_is_powerup) {
             // Boss-reward powerups never time out; the player must pick one.
         } else if (!p->lifetime) {
             delete_pickup(i);
@@ -90,32 +98,46 @@ routine(Pickups_update) {
             --p->lifetime;
         }
 
+        // Cache position once; only written back if the magnet actually moves it.
+        px = p->x;
+        py = p->y;
+
         if (ship_has_magnet() && !awaiting_boss_powerup_choice) {
-            ship_px = ((ship_x >> 8) + 8);
-            ship_py = ((ship_y >> 8) + 8);
-            dx = ship_px - p->x;
-            dy = ship_py - p->y;
-            dist = (dx < 0 ? -dx : dx) + (dy < 0 ? -dy : dy);
+            ship_cx = ship_x + ((bigval)8 << 8);
+            ship_cy = ship_y + ((bigval)8 << 8);
+            dx = (sbigval)(ship_cx - px) >> 8;
+            dy = (sbigval)(ship_cy - py) >> 8;
+            abs_dx = (dx < 0) ? -dx : dx;
+            abs_dy = (dy < 0) ? -dy : dy;
+            dist = abs_dx + abs_dy;
 
             if (dist > 0 && dist < MAGNET_RANGE) {
-                p->x += (dx * pull) / (dist + 8);
-                p->y += (dy * pull) / (dist + 8);
+                speed = MAGNET_MAX_SPEED - ((bigval)dist * (MAGNET_MAX_SPEED - MAGNET_MIN_SPEED)) / MAGNET_RANGE;
+
+                mag = ((bigval)speed * abs_dx) / dist;
+                px += (dx < 0) ? -mag : mag;
+                mag = ((bigval)speed * abs_dy) / dist;
+                py += (dy < 0) ? -mag : mag;
+
+                p->x = px;
+                p->y = py;
             }
         }
 
         // Set collision rect
-        r1.x = p->x;
-        r1.y = p->y;
+        r1.x = px >> 8;
+        r1.y = py >> 8;
         r1.width = PICKUP_W;
         r1.height = PICKUP_H;
 
         // Check for bullet collision
         for(bullet_index = 0; bullet_index < n_bullets; ++bullet_index) {
-            r2.x = bullets[bullet_index].x >> 8;
-            r2.y = bullets[bullet_index].y >> 8;
+            bp = &bullets[bullet_index];
+            r2.x = bp->x >> 8;
+            r2.y = bp->y >> 8;
             r2.width = 8;
             r2.height = 8;
-            if (is_powerup_pickup(p->type) && check_collision(&r1, &r2)) {
+            if (cur_is_powerup && check_collision(&r1, &r2)) {
                 resolve_pickup(p->type);
                 delete_pickup(i);
                 --i;
@@ -138,7 +160,7 @@ routine(Pickups_update) {
         r2.y = (ship_y >> 8) + 8;
         r2.width = 16;
         r2.height = 16;
-        if (!is_powerup_pickup(p->type) && check_collision(&r1, &r2)) {
+        if (!cur_is_powerup && check_collision(&r1, &r2)) {
             resolve_pickup(p->type);
             delete_pickup(i);
             --i;
@@ -172,7 +194,7 @@ render_routine(Pickups) {
     nxt = sprid;
     for(i = 0; i < n_pickups; ++i) {
         p = &pickups[i];
-        nxt = oam_spr(p->x, p->y, sprite_of_Pickup(p), PICKUPS_PALETTE | (pickup_timer % 16 < 8 ? OAM_FLIP_H : 0), nxt);
+        nxt = oam_spr(p->x >> 8, p->y >> 8, sprite_of_Pickup(p), PICKUPS_PALETTE | (pickup_timer % 16 < 8 ? OAM_FLIP_H : 0), nxt);
     }
     return nxt;
 }
@@ -183,8 +205,8 @@ void add_pickup(PickupType type, val x, val y) {
 
     p = &pickups[n_pickups];
     p->type = type;
-    p->x = x;
-    p->y = y;
+    p->x = (bigval)x << 8;
+    p->y = (bigval)y << 8;
     p->lifetime = (type == Shield) ? (PICKUP_LIFETIME * 3) : PICKUP_LIFETIME;
     ++n_pickups;
 }

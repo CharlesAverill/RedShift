@@ -18,6 +18,9 @@ typedef struct Bullet {
     val sprite;
     val sprite_attrs;
     val lifetime;
+    // Pads the struct from 11 to 16 bytes so array indexing (bullets[i]) is a
+    // cheap shift instead of a runtime multiply by a non-power-of-2 size.
+    val _pad[5];
 } Bullet;
 
 #define MAX_BULLETS 3

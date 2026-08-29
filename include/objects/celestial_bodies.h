@@ -30,6 +30,7 @@ typedef struct CBody {
     bool drop_pickup;
     val attrs;
     bool despawn_at_edge;
+    val _pad; // pad to 16 bytes
 } CBody;
 
 routine(CBodies_init);

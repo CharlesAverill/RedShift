@@ -34,6 +34,8 @@ static val boss_spiral_phase;
 
 static Rect boss_rect, other_rect;
 static val boss_ms_buf[17];
+static val boss_bullet_idx;
+static Bullet *boss_bullet_ptr;
 
 #define BOSS_W        16
 #define BOSS_H        16
@@ -59,6 +61,7 @@ static val boss_ms_buf[17];
 #define BOSS_THROW_MIN_TIER 1        // asteroid-throwing starts on the level 2 boss
 #define BOSS_THROW_INTERVAL 120      // ~2s between throws
 #define BOSS_THROW_SPEED    (sbigval)0x0180
+#define BOSS_MAX_LEAD_FRAMES 15      // prediction window at the highest tier
 
 #define BOSS_TIER_COUNT  (MAX_TIER + 1)
 
@@ -139,15 +142,26 @@ static void throw_asteroid_at_ship(void) {
     sbigval dx, dy;
     val angle;
     sbigval vx, vy;
+    sbigval ship_cx, ship_cy;
+    val lead_frames;
+    sbigval lead_x, lead_y;
 
-    dx = (sbigval)(boss_x >> 8) - (sbigval)(ship_x >> 8);
-    dy = (sbigval)(boss_y >> 8) - (sbigval)(ship_y >> 8);
+    ship_cx = (ship_x >> 8) + 8;
+    ship_cy = (ship_y >> 8) + 8;
+
+    // lead shots at higher tiers
+    lead_frames = ((bigval)lvl * BOSS_MAX_LEAD_FRAMES) / (BOSS_TIER_COUNT - 1);
+    lead_x = (ship_vx >> 8) * lead_frames;
+    lead_y = (ship_vy >> 8) * lead_frames;
+
+    dx = (sbigval)(boss_x >> 8) - (ship_cx + lead_x);
+    dy = (sbigval)(boss_y >> 8) - (ship_cy + lead_y);
 
     angle = atan2(dx, dy);
-    vx = (BOSS_THROW_SPEED * (128 - (sbigval)sin(angle))) / 128;
-    vy = (BOSS_THROW_SPEED * (128 - (sbigval)cos(angle))) / 128;
+    vx = (sbigval)(((long)BOSS_THROW_SPEED * (128 - (sbigval)sin(angle))) / 128);
+    vy = (sbigval)(((long)BOSS_THROW_SPEED * (128 - (sbigval)cos(angle))) / 128);
 
-    add_body(boss_x + ((bigval)4 << 8), boss_y + ((bigval)4 << 8), -vx, -vy,
+    add_body(boss_x + ((bigval)4 << 8), boss_y + ((bigval)4 << 8), vx, vy,
              rand8() % CBodyTypeEnd, false, random_attrs(), true);
 }
 
@@ -174,6 +188,9 @@ routine(Boss_init) {
 }
 
 routine(trigger_boss_encounter) {
+    if (boss_active)
+        return;
+
 	Boss_init();
 	
     start_boss_encounter = false;
@@ -350,14 +367,14 @@ routine(Boss_update) {
 
     // Bullet collision
     if (!boss_invincible) {
-        val b;
-        for (b = 0; b < n_bullets; ++b) {
-            other_rect.x = bullets[b].x >> 8;
-            other_rect.y = bullets[b].y >> 8;
+        for (boss_bullet_idx = 0; boss_bullet_idx < n_bullets; ++boss_bullet_idx) {
+            boss_bullet_ptr = &bullets[boss_bullet_idx];
+            other_rect.x = boss_bullet_ptr->x >> 8;
+            other_rect.y = boss_bullet_ptr->y >> 8;
             other_rect.width = 8;
             other_rect.height = 8;
             if (check_collision(&boss_rect, &other_rect)) {
-                delete_bullet(b);
+                delete_bullet(boss_bullet_idx);
 
                 sfx_play(SFX_EXPLOSION, SFX_CHANNEL);
 
