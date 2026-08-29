@@ -1,5 +1,5 @@
-#ifndef SHIP
-#define SHIP
+#ifndef SHIP_H
+#define SHIP_H
 
 #include "neslib.h"
 #include "palette.h"
@@ -56,4 +56,4 @@ bool __fastcall__ ship_has_magnet(void);
 bool __fastcall__ ship_has_protection(void);
 bool __fastcall__ ship_below_full_health(void);
 
-#endif /* SHIP */
+#endif /* SHIP_H */

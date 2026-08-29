@@ -9,6 +9,7 @@
 #include "utils.h"
 #include "neslib.h"
 #include "score.h"
+#include "math.h"
 
 bool start_boss_encounter = false;
 bool boss_active = false;
@@ -29,6 +30,7 @@ static bool boss_dying;
 static bool boss_coasting;
 static val boss_death_timer;
 static val boss_anim;
+static val boss_spiral_phase;
 
 static Rect boss_rect, other_rect;
 static val boss_ms_buf[17];
@@ -53,6 +55,10 @@ static val boss_ms_buf[17];
 #define BOSS_ENTER_X     ((bigval)120 << 8)
 #define BOSS_ENTER_Y     ((bigval)40 << 8)
 #define BOSS_ENTER_SPEED 0x0060
+
+#define BOSS_THROW_MIN_TIER 1        // asteroid-throwing starts on the level 2 boss
+#define BOSS_THROW_INTERVAL 120      // ~2s between throws
+#define BOSS_THROW_SPEED    (sbigval)0x0180
 
 #define BOSS_TIER_COUNT  (MAX_TIER + 1)
 
@@ -87,6 +93,7 @@ static const val boss_health_by_tier[BOSS_TIER_COUNT] = {
 };
 
 static val lvl;
+static val boss_throw_timer;
 
 static const unsigned char boss_bg_palettes[MAX_TIER + 1][16] = {
     { BLACK, DARK_BLUE, BLUE_1, LIGHT_BLUE, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
@@ -128,6 +135,22 @@ static void boss_take_hit_window(void) {
     boss_invincible = true;
 }
 
+static void throw_asteroid_at_ship(void) {
+    sbigval dx, dy;
+    val angle;
+    sbigval vx, vy;
+
+    dx = (sbigval)(boss_x >> 8) - (sbigval)(ship_x >> 8);
+    dy = (sbigval)(boss_y >> 8) - (sbigval)(ship_y >> 8);
+
+    angle = atan2(dx, dy);
+    vx = (BOSS_THROW_SPEED * (128 - (sbigval)sin(angle))) / 128;
+    vy = (BOSS_THROW_SPEED * (128 - (sbigval)cos(angle))) / 128;
+
+    add_body(boss_x + ((bigval)4 << 8), boss_y + ((bigval)4 << 8), -vx, -vy,
+             rand8() % CBodyTypeEnd, false, random_attrs(), true);
+}
+
 routine(Boss_init) {
     boss_active = false;
     boss_invincible = false;
@@ -146,6 +169,8 @@ routine(Boss_init) {
     boss_hit_timer = 0;
     boss_death_timer = 0;
     boss_anim = 0;
+    boss_spiral_phase = 0;
+    boss_throw_timer = BOSS_THROW_INTERVAL;
 }
 
 routine(trigger_boss_encounter) {
@@ -182,6 +207,10 @@ routine(trigger_boss_encounter) {
 }
 
 routine(Boss_update) {
+	static sbigval tangential_x;
+	static sbigval tangential_y;
+	static sbigval spiral_x;
+	static sbigval spiral_y;
     if (!boss_active)
         return;
 
@@ -259,8 +288,14 @@ routine(Boss_update) {
     }
 
     // Move
-    boss_x += boss_vx;
-    boss_y += boss_vy;
+	tangential_x = -(boss_vy >> 3);
+	tangential_y = boss_vx >> 3;
+	spiral_x = ((sbigval)sin(boss_spiral_phase) * tangential_x) >> 7;
+	spiral_y = ((sbigval)cos(boss_spiral_phase) * tangential_y) >> 7;
+
+	boss_x += boss_vx + 4 * spiral_x;
+	boss_y += boss_vy + 4 * spiral_y;
+	boss_spiral_phase = (boss_spiral_phase + 8) & 0xFF;
 
     // Bounce off the walls
     bounced = false;
@@ -322,9 +357,7 @@ routine(Boss_update) {
             other_rect.width = 8;
             other_rect.height = 8;
             if (check_collision(&boss_rect, &other_rect)) {
-                // consume the bullet
-                bullets[b] = bullets[n_bullets - 1];
-                --n_bullets;
+                delete_bullet(b);
 
                 sfx_play(SFX_EXPLOSION, SFX_CHANNEL);
 
@@ -344,7 +377,11 @@ routine(Boss_update) {
         }
     }
 
-    // TODO: attacks
+    // starting on the level 2 boss, periodically throw an asteroid at the ship
+    if (lvl >= BOSS_THROW_MIN_TIER && --boss_throw_timer == 0) {
+        boss_throw_timer = BOSS_THROW_INTERVAL;
+        throw_asteroid_at_ship();
+    }
 }
 
 routine(end_boss_encounter) {

@@ -29,16 +29,17 @@ typedef struct CBody {
     bool hasGravity;
     bool drop_pickup;
     val attrs;
+    bool despawn_at_edge;
 } CBody;
 
 routine(CBodies_init);
 routine(CBodies_update);
 render_routine(CBodies);
 
-void add_body(bigval x, bigval y, sbigval vx, sbigval vy, CBodyType type, bool hasGravity, val attrs);
+void add_body(bigval x, bigval y, sbigval vx, sbigval vy, CBodyType type, bool hasGravity, val attrs, bool despawn_at_edge);
 routine(destroy_all_bodies);
 
-extern bool do_collision_checks;
+val random_attrs(void);
 
 routine(enable_asteroid_spawns);
 routine(disable_asteroid_spawns);

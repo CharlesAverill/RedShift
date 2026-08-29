@@ -11,10 +11,7 @@ routine(Bullets_init) {
 }
 
 void delete_bullet(val n) {
-    for(; n < n_bullets; ++n) {
-        bullets[n] = bullets[n + 1];
-    }
-    --n_bullets;
+    bullets[n] = bullets[--n_bullets];
 }
 
 static val i;

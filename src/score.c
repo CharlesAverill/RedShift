@@ -2,7 +2,7 @@
 #include "nesdoug.h"
 #include "neslib.h"
 #include "string.h"
-#include "events.h"
+#include "objects/boss.h"
 
 #define PLAY_FONT_BASE  0xC1
 #define DIGIT_TILE(ch)  ((ch) - ' ' + PLAY_FONT_BASE)
@@ -16,7 +16,7 @@
 Score score;
 unsigned char score_mult;
 
-static const char suffix[MAX_TIER] = { ' ', 'K', 'M', 'B', 'T', 'Q', 'P', 'S', 'H', 'O', 'N', 'D'};
+static const char suffix[MAX_TIER + 1] = { ' ', 'K', 'M', 'B', 'T', 'Q', 'P', 'S', 'H', 'O', 'N', 'D', 'U'};
 
 routine(reset_score) {
     score.mantissa = 0;

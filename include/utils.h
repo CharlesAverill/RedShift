@@ -2,11 +2,10 @@
 #define UTILS_H
 
 #include "types.h"
+#include "nesdoug.h"
 
 typedef struct Rect {
     val x, y, width, height;
 } Rect;
-
-bool check_collision(Rect *object1, Rect* object2);
 
 #endif

@@ -43,13 +43,12 @@ routine(Ship_init) {
     iframe_ctr = 1;
 }
 
-sbigval f_x, f_y;
-val thrust_counter = 0;
-bool rotating_retrograde = false;
-val target_rotation;
-sbigval diff1, diff2;
-sbigval dx, dy;
-bool facing_up, facing_down;
+static sbigval f_x, f_y;
+static val thrust_counter = 0;
+static bool rotating_retrograde = false;
+static val target_rotation;
+static sbigval diff1, diff2;
+static bool facing_up, facing_down;
 routine(Ship_update) {
     if (kill_ship_flag) {
         if (++kill_ship_timer % 20 == 0) {

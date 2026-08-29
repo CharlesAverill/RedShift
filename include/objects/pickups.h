@@ -1,5 +1,5 @@
-#ifndef PICKUPS
-#define PICKUPS
+#ifndef PICKUPS_H
+#define PICKUPS_H
 
 #include "types.h"
 
@@ -42,4 +42,4 @@ routine(spawn_boss_reward_pickups);
 
 void add_pickup(PickupType type, val x, val y);
 
-#endif /* PICKUPS */
+#endif /* PICKUPS_H */

@@ -10,7 +10,8 @@
 #include "events.h"
 #include "score.h"
 
-void delete_body(val n);
+static void delete_body(val n);
+static void roll_body_drops(sbigval x, sbigval y);
 
 const val CBody_sprites[CBodyTypeEnd] = {ASTEROID_SPRITE, HALF_ASTEROID_SPRITE, QUARTER_ASTEROID_SPRITE};
 const val CBody_dead_sprites[2] = {EXPLOSION_1_SPRITE, EXPLOSION_2_SPRITE};
@@ -24,6 +25,8 @@ const val CBody_heights[CBodyTypeEnd] = {8, 8, 8};
 #define MAX_BODIES 9
 #define MIN_ASTEROIDS 3  // Try to keep at least this many
 #define MAX_ASTEROIDS 7  // Don't exceed this many
+
+#define SCREEN_H 240
 
 static val n_bodies = 0;
 static CBody bodies[MAX_BODIES];
@@ -163,7 +166,7 @@ collision_check:
             }
             
             if (do_spawns)
-                add_body(spawn_x, spawn_y, spawn_vx, spawn_vy, rand8() % CBodyTypeEnd, rand8() < 85, random_attrs());
+                add_body(spawn_x, spawn_y, spawn_vx, spawn_vy, rand8() % CBodyTypeEnd, rand8() < 85, random_attrs(), false);
             spawn_timer = 0;
         }
     }
@@ -181,26 +184,24 @@ collision_check:
         bodyi_y = bodyi_ptr->y >> 8;
         if (bodyi_ptr->dead) {
             if (bodyi_ptr->dead_frame >= 24) {
-                if (bodyi_ptr->drop_pickup) {
-                    val small_chance = ship_has_luck() ? 180 : 128;
-                    val large_chance = ship_has_luck() ? 110 : 54;
-                    val shield_chance = ship_has_luck() ? 100 : 54;
-
-                    if (rand8() < small_chance) // 50-70%
-                        add_pickup(SmallPoints, bodyi_x - 4, bodyi_y);
-                    if (rand8() < large_chance) // 25-43%
-                        add_pickup(LargePoints, bodyi_x + 4, bodyi_y);
-                    if (ship_below_full_health() && rand8() < shield_chance) // 25-39% when hurt
-                        add_pickup(Shield, bodyi_x, bodyi_y);
-                }
+                if (bodyi_ptr->drop_pickup)
+                    roll_body_drops(bodyi_x, bodyi_y);
                 delete_body(i);
                 --i;
-            } else { 
+            } else {
                 ++bodyi_ptr->dead_frame;
             }
             continue;
         }
-        
+
+        if (bodyi_ptr->despawn_at_edge &&
+            ((bodyi_ptr->vx < 0 && bodyi_x <= 0) || (bodyi_ptr->vx > 0 && bodyi_x >= 255) ||
+             (bodyi_ptr->vy < 0 && bodyi_y <= 0) || (bodyi_ptr->vy > 0 && bodyi_y >= SCREEN_H))) {
+            delete_body(i);
+            --i;
+            continue;
+        }
+
         if (!kill_ship_flag) {
             r1.x = bodyi_x;
             r1.y = bodyi_y;
@@ -260,11 +261,21 @@ collision_check:
     }
 }
 
-void delete_body(val n) {
-    for(; n < n_bodies; ++n) {
-        bodies[n] = bodies[n + 1];
-    }
-    --n_bodies;
+static void delete_body(val n) {
+    bodies[n] = bodies[--n_bodies];
+}
+
+static void roll_body_drops(sbigval x, sbigval y) {
+    val small_chance = ship_has_luck() ? 180 : 128;
+    val large_chance = ship_has_luck() ? 110 : 54;
+    val shield_chance = ship_has_luck() ? 100 : 54;
+
+    if (rand8() < small_chance) // 50-70%
+        add_pickup(SmallPoints, x - 4, y);
+    if (rand8() < large_chance) // 25-43%
+        add_pickup(LargePoints, x + 4, y);
+    if (ship_below_full_health() && rand8() < shield_chance) // 25-39% when hurt
+        add_pickup(Shield, x, y);
 }
 
 static val nxt;
@@ -282,7 +293,7 @@ val num_bodies(void) {
 }
 
 static CBody body;
-void add_body(bigval x, bigval y, sbigval vx, sbigval vy, CBodyType type, bool hasGravity, val attrs) {
+void add_body(bigval x, bigval y, sbigval vx, sbigval vy, CBodyType type, bool hasGravity, val attrs, bool despawn_at_edge) {
     if (n_bodies >= MAX_BODIES)
         return;
 
@@ -294,6 +305,7 @@ void add_body(bigval x, bigval y, sbigval vx, sbigval vy, CBodyType type, bool h
     body.dead = false;
     body.hasGravity = hasGravity;
     body.attrs = attrs;
+    body.despawn_at_edge = despawn_at_edge;
     bodies[n_bodies] = body;
 
     ++n_bodies;

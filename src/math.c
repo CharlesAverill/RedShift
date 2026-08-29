@@ -78,11 +78,11 @@ bigval isqrt16(bigval x) {
     return L;
 }
 
-val quadrant;
-sbigval abs_x, abs_y;
-val low, high, mid, best_angle, i;
-sbigval best_error, error;
-sbigval lhs, rhs;
+static val quadrant;
+static sbigval abs_x, abs_y;
+static val low, high, mid, best_angle, i;
+static sbigval best_error, error;
+static sbigval lhs, rhs;
 val atan2(sbigval y, sbigval x) {
     // Handle zero cases
     if (x == 0 && y == 0) return 0;

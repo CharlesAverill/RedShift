@@ -1,5 +1,5 @@
-#ifndef BULLETS
-#define BULLETS
+#ifndef BULLETS_H
+#define BULLETS_H
 
 #include "types.h"
 
@@ -39,4 +39,11 @@ render_routine(Bullets);
  */
 void add_bullet(sbigval x, sbigval y, sbigval vx, sbigval vy, facing f);
 
-#endif /* BULLETS */
+/**
+ * @brief Remove a bullet by index (order is not preserved)
+ *
+ * @param n Index of the bullet to remove
+ */
+void delete_bullet(val n);
+
+#endif /* BULLETS_H */

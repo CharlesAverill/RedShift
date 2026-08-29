@@ -64,11 +64,8 @@ routine(Pickups_init) {
     awaiting_boss_powerup_choice = false;
 }
 
-void delete_pickup(val n) {
-    for(; n < n_pickups; ++n) {
-        pickups[n] = pickups[n + 1];
-    }
-    --n_pickups;
+static void delete_pickup(val n) {
+    pickups[n] = pickups[--n_pickups];
 }
 
 static val i;

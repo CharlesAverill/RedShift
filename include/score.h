@@ -1,5 +1,5 @@
-#ifndef SCORE
-#define SCORE
+#ifndef SCORE_H
+#define SCORE_H
 
 #include "types.h"
 
@@ -21,4 +21,4 @@ routine(reset_score);
 routine(reset_score_multiplier);
 render_routine(Score);
 
-#endif /* SCORE */
+#endif /* SCORE_H */

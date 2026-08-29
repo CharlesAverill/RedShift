@@ -6,7 +6,7 @@
 val sin(val x);
 val cos(val x);
 val isqrt(val x);
-val atan2(sbigval x, sbigval y);
+val atan2(sbigval y, sbigval x);
 sbigval isqrt16s(sbigval x);
 bigval isqrt16(bigval x);
 
