@@ -50,10 +50,20 @@ void ship_give_wide_shot(void);
 void ship_give_luck(void);
 void ship_give_magnet(void);
 void ship_activate_protection(void);
+void ship_give_rapid_fire(void);
+void ship_give_rear_turret(void);
+void ship_give_repulsor(void);
+void ship_give_fast_turn(void);
+void ship_give_brake(void);
 bool __fastcall__ ship_has_wide_shot(void);
 bool __fastcall__ ship_has_luck(void);
 bool __fastcall__ ship_has_magnet(void);
 bool __fastcall__ ship_has_protection(void);
+bool __fastcall__ ship_has_rapid_fire(void);
+bool __fastcall__ ship_has_rear_turret(void);
+bool __fastcall__ ship_has_repulsor(void);
+bool __fastcall__ ship_has_fast_turn(void);
+bool __fastcall__ ship_has_brake(void);
 bool __fastcall__ ship_below_full_health(void);
 
 #endif /* SHIP_H */

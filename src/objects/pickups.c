@@ -57,6 +57,26 @@ static void resolve_pickup(PickupType type) {
             ship_activate_protection();
             sfx_play(SFX_LARGE_PICKUP, SFX_CHANNEL);
             break;
+        case PowerupRapidFire:
+            ship_give_rapid_fire();
+            sfx_play(SFX_LARGE_PICKUP, SFX_CHANNEL);
+            break;
+        case PowerupRearTurret:
+            ship_give_rear_turret();
+            sfx_play(SFX_LARGE_PICKUP, SFX_CHANNEL);
+            break;
+        case PowerupRepulsor:
+            ship_give_repulsor();
+            sfx_play(SFX_LARGE_PICKUP, SFX_CHANNEL);
+            break;
+        case PowerupTurnSpeed:
+            ship_give_fast_turn();
+            sfx_play(SFX_LARGE_PICKUP, SFX_CHANNEL);
+            break;
+        case PowerupBrake:
+            ship_give_brake();
+            sfx_play(SFX_LARGE_PICKUP, SFX_CHANNEL);
+            break;
     }
 }
 
@@ -185,16 +205,32 @@ val sprite_of_Pickup(Pickup *p) {
             return BULLET_DIAG_SPRITE;
         case PowerupMagnet:
             return MAGNET_SPRITE;
+        case PowerupRapidFire:
+            return BULLET_HORZ_SPRITE;
+        case PowerupRearTurret:
+            return BULLET_VERT_SPRITE;
+        case PowerupRepulsor:
+            return REPULSOR_SPRITE;
+        case PowerupTurnSpeed:
+            return TURN_SPEED_SPRITE;
+        case PowerupBrake:
+            return BRAKE_SPRITE;
     }
     return SMALL_POINTS_SPRITE;
 }
 
 static val nxt;
+static val pickup_attrs;
 render_routine(Pickups) {
     nxt = sprid;
     for(i = 0; i < n_pickups; ++i) {
         p = &pickups[i];
-        nxt = oam_spr(p->x >> 8, p->y >> 8, sprite_of_Pickup(p), PICKUPS_PALETTE | (pickup_timer % 16 < 8 ? OAM_FLIP_H : 0), nxt);
+        if (is_powerup_pickup(p->type)) {
+            pickup_attrs = (pickup_timer >> 2) & 3;
+        } else {
+            pickup_attrs = PICKUPS_PALETTE | (pickup_timer % 16 < 8 ? OAM_FLIP_H : 0);
+        }
+        nxt = oam_spr(p->x >> 8, p->y >> 8, sprite_of_Pickup(p), pickup_attrs, nxt);
     }
     return nxt;
 }
@@ -229,6 +265,16 @@ void spawn_boss_reward_pickups(void) {
         if (choice == PowerupLuck && ship_has_luck())
             continue;
         if (choice == PowerupMagnet && ship_has_magnet())
+            continue;
+        if (choice == PowerupRapidFire && ship_has_rapid_fire())
+            continue;
+        if (choice == PowerupRearTurret && ship_has_rear_turret())
+            continue;
+        if (choice == PowerupRepulsor && ship_has_repulsor())
+            continue;
+        if (choice == PowerupTurnSpeed && ship_has_fast_turn())
+            continue;
+        if (choice == PowerupBrake && ship_has_brake())
             continue;
         available[available_count++] = choice;
     }

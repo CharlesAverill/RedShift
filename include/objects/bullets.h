@@ -23,7 +23,7 @@ typedef struct Bullet {
     val _pad[5];
 } Bullet;
 
-#define MAX_BULLETS 3
+#define MAX_BULLETS 6
 extern Bullet bullets[MAX_BULLETS];
 extern val n_bullets;
 

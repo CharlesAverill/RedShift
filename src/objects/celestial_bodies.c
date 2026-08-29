@@ -61,12 +61,23 @@ static sbigval bodyi_vx, bodyi_vy, bodyj_vx, bodyj_vy;
 #define GRAVITY_RANGE 64
 #define GRAVITY_STRENGTH 4
 
+#define REPULSOR_RANGE 32
+#define REPULSOR_STRENGTH 4
+
+#define SPAWN_INTERVAL_BASE     100
+#define SPAWN_INTERVAL_MIN      5
+#define SPAWN_INTERVAL_PER_TIER (SPAWN_INTERVAL_BASE - SPAWN_INTERVAL_MIN) / (MAX_TIER + 1)
+
 static val gravity_timer;
 static val n_bodies;
 static val spawn_chance;
+static val spawn_interval;
 
 static val bullet_x[MAX_BULLETS];
 static val bullet_y[MAX_BULLETS];
+
+static sbigval rdx, rdy;
+static val rabs_dx, rabs_dy;
 
 routine(CBodies_update) {
     if (++gravity_timer != 3)
@@ -125,10 +136,13 @@ routine(CBodies_update) {
         bodyi_ptr->vy = bodyi_vy;
     }
 
-collision_check:    
+collision_check:
     // Spawn new asteroids based on current count
     // Fewer asteroids = higher spawn chance
-    if (++spawn_timer > 100 && n_bodies < MAX_BODIES && n_bodies < MAX_ASTEROIDS && !game_over_flag) {
+    spawn_interval = SPAWN_INTERVAL_BASE - ((bigval)score.tier * SPAWN_INTERVAL_PER_TIER);
+    if (spawn_interval < SPAWN_INTERVAL_MIN)
+        spawn_interval = SPAWN_INTERVAL_MIN;
+    if (++spawn_timer > spawn_interval && n_bodies < MAX_BODIES && n_bodies < MAX_ASTEROIDS && !game_over_flag) {
         // Calculate spawn chance: more aggressive when fewer asteroids
         // spawn_chance ranges from 255 (when few asteroids) to ~32 (when many)
         if (n_bodies < MIN_ASTEROIDS) {
@@ -204,11 +218,24 @@ collision_check:
         }
 
         if (!kill_ship_flag) {
+            if (ship_has_repulsor()) {
+                rdx = bodyi_x - ((ship_x >> 8) + 8);
+                rdy = bodyi_y - ((ship_y >> 8) + 8);
+                rabs_dx = (rdx < 0) ? -rdx : rdx;
+                rabs_dy = (rdy < 0) ? -rdy : rdy;
+                if (rabs_dx + rabs_dy > 0 && rabs_dx + rabs_dy < REPULSOR_RANGE) {
+                    if (rdx > 0) bodyi_ptr->vx += REPULSOR_STRENGTH;
+                    else if (rdx < 0) bodyi_ptr->vx -= REPULSOR_STRENGTH;
+                    if (rdy > 0) bodyi_ptr->vy += REPULSOR_STRENGTH;
+                    else if (rdy < 0) bodyi_ptr->vy -= REPULSOR_STRENGTH;
+                }
+            }
+
             r1.x = bodyi_x;
             r1.y = bodyi_y;
             r1.width = CBody_width(bodyi_ptr->type);
             r1.height = CBody_height(bodyi_ptr->type);
-            
+
             for(j = 0; j < n_bullets; ++j) {
                 // Fast early rejection
                 // dx = bullet_x[j] - r1.x;

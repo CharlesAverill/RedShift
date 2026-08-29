@@ -22,8 +22,18 @@ static bool wide_shot;
 static bool luck_charm;
 static bool magnet_active;
 static bool protection_ready;
+static bool rapid_fire;
+static bool rear_turret;
+static bool repulsor_active;
+static bool fast_turn;
+static bool brake_active;
+static val fire_cooldown;
 
 #define SHIP_MAX_HEALTH 4
+#define BASE_TURN_SPEED 2
+#define FAST_TURN_SPEED 4
+#define RAPID_FIRE_COOLDOWN 10  // frames between auto-fired shots
+#define BRAKE_DIVISOR 16
 
 routine(Ship_init) {
     ship_x = (bigval)128 << 8;
@@ -38,19 +48,30 @@ routine(Ship_init) {
     kill_ship_timer = 0;
     kill_ship_halve_timer = 0;
 #if DEBUG_MODE == 1
-    wide_shot = true;
-    luck_charm = true;
-    magnet_active = true;
+    wide_shot        = true;
+    luck_charm       = true;
+    magnet_active    = true;
     protection_ready = true;
+    rapid_fire       = true;
+    rear_turret      = true;
+    repulsor_active  = true;
+    fast_turn        = true;
+    brake_active     = true;
 #else
     wide_shot = false;
     luck_charm = false;
     magnet_active = false;
     protection_ready = false;
+    rapid_fire = false;
+    rear_turret = false;
+    repulsor_active = false;
+    fast_turn = false;
+    brake_active = false;
 #endif
 
     health = SHIP_MAX_HEALTH;
     iframe_ctr = 1;
+    fire_cooldown = 0;
 }
 
 static sbigval f_x, f_y;
@@ -59,6 +80,7 @@ static bool rotating_retrograde = false;
 static val target_rotation;
 static sbigval diff1, diff2;
 static bool facing_up, facing_down;
+static val turn_speed;
 routine(Ship_update) {
     if (kill_ship_flag) {
         ++kill_ship_timer;
@@ -73,11 +95,13 @@ routine(Ship_update) {
     if (iframe_ctr)
         ++iframe_ctr;
 
+    turn_speed = fast_turn ? FAST_TURN_SPEED : BASE_TURN_SPEED;
+
     // Rotation
     if (down(LEFT))
-        ship_rotation += 2;
+        ship_rotation += turn_speed;
     else if (down(RIGHT))
-        ship_rotation -= 2;
+        ship_rotation -= turn_speed;
 
     if (triggered(DOWN)) {
         rotating_retrograde = true;
@@ -93,12 +117,20 @@ routine(Ship_update) {
         diff2 = (sbigval)target_rotation - ship_rotation;
 
         if (abs(diff1) < abs(diff2)) {
-            ship_rotation += sign(diff1) * 2;
+            ship_rotation += sign(diff1) * turn_speed;
         } else {
-            ship_rotation += sign(diff2) * 2;
+            ship_rotation += sign(diff2) * turn_speed;
         }
     }
-    
+
+    // Brake with B
+    if (brake_active && down(B)) {
+        if (ship_vx > 0) ship_vx -= max(1, ship_vx / BRAKE_DIVISOR);
+        else if (ship_vx < 0) ship_vx -= min(-1, ship_vx / BRAKE_DIVISOR);
+        if (ship_vy > 0) ship_vy -= max(1, ship_vy / BRAKE_DIVISOR);
+        else if (ship_vy < 0) ship_vy -= min(-1, ship_vy / BRAKE_DIVISOR);
+    }
+
     // Thrusters
     if ((thrust_counter & 3) == 0) {
         if (down(UP)) {
@@ -132,8 +164,12 @@ routine(Ship_update) {
     if (ship_vy < -MAX_SPEED) ship_vy = -MAX_SPEED;
 
     // Blasters
-    if (triggered(A) && !boss_invincible) {
-        sbigval fire_x, fire_y, fire_vx, fire_vy, spread_x, spread_y;
+    if (fire_cooldown)
+        --fire_cooldown;
+
+    if ((triggered(A) || (rapid_fire && down(A) && fire_cooldown == 0)) && !boss_invincible) {
+        static sbigval fire_x, fire_y, fire_vx, fire_vy, spread_x, spread_y;
+        static val rear_rotation;
 
         facing_up = ship_rotation < 32 || ship_rotation > 220;
         facing_down = 96 < ship_rotation && ship_rotation < 160;
@@ -154,8 +190,20 @@ routine(Ship_update) {
             add_bullet(fire_x - (spread_x << 8), fire_y - (spread_y << 8), fire_vx, fire_vy,
                 ((ship_rotation + 16) >> 5) & 7);
         }
+
+        if (rear_turret) {
+            rear_rotation = (ship_rotation + 128) & 0xFF;
+            fire_x = ((ship_x >> 8) + 5 + ((((sbigval)cos(rear_rotation & 31) - 128) << 3) / 128)) << 8;
+            fire_y = ((ship_y >> 8) + 8 + ((((sbigval)sin(rear_rotation & 31) - 128) << 3) / 128)) << 8;
+            fire_vx = ship_vx + (BULLET_SPEED * ((sbigval)sin(rear_rotation) - 128) / 128 << 8);
+            fire_vy = ship_vy + (BULLET_SPEED * ((sbigval)cos(rear_rotation) - 128) / 128 << 8);
+            add_bullet(fire_x, fire_y, fire_vx, fire_vy, ((rear_rotation + 16) >> 5) & 7);
+        }
+
+        if (rapid_fire)
+            fire_cooldown = RAPID_FIRE_COOLDOWN;
     }
-    
+
     // Apply velocity
 apply_velocity:
     ship_x += ship_vx;
@@ -228,7 +276,7 @@ routine(ship_damage) {
         sfx_play(SFX_GAME_OVER, SFX_CHANNEL);
     } else {
         reset_score_multiplier();
-#if DEBUG_MODE == 0
+#if DEBUG_MODE != 1
         --health;
 #endif
         iframe_ctr = 1;
@@ -257,6 +305,26 @@ void ship_activate_protection(void) {
     protection_ready = true;
 }
 
+void ship_give_rapid_fire(void) {
+    rapid_fire = true;
+}
+
+void ship_give_rear_turret(void) {
+    rear_turret = true;
+}
+
+void ship_give_repulsor(void) {
+    repulsor_active = true;
+}
+
+void ship_give_fast_turn(void) {
+    fast_turn = true;
+}
+
+void ship_give_brake(void) {
+    brake_active = true;
+}
+
 bool __fastcall__ ship_has_wide_shot(void) {
     return wide_shot;
 }
@@ -271,6 +339,26 @@ bool __fastcall__ ship_has_magnet(void) {
 
 bool __fastcall__ ship_has_protection(void) {
     return protection_ready;
+}
+
+bool __fastcall__ ship_has_rapid_fire(void) {
+    return rapid_fire;
+}
+
+bool __fastcall__ ship_has_rear_turret(void) {
+    return rear_turret;
+}
+
+bool __fastcall__ ship_has_repulsor(void) {
+    return repulsor_active;
+}
+
+bool __fastcall__ ship_has_fast_turn(void) {
+    return fast_turn;
+}
+
+bool __fastcall__ ship_has_brake(void) {
+    return brake_active;
 }
 
 bool __fastcall__ ship_below_full_health(void) {
